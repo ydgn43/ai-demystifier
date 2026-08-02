@@ -1,5 +1,3 @@
-import json
-
 import asyncpg
 
 from app.schemas.raw_item import RawItemIn
@@ -27,7 +25,7 @@ async def upsert_raw_items(pool: asyncpg.Pool, items: list[RawItemIn]) -> int:
                     item.title,
                     item.raw_text,
                     item.published_at,
-                    json.dumps(item.metrics_json),
+                    item.metrics_json,
                 )
                 for item in items
             ],

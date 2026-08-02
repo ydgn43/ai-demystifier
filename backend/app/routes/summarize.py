@@ -1,5 +1,3 @@
-import json
-
 import asyncpg
 from fastapi import APIRouter, Depends, Query
 
@@ -66,8 +64,8 @@ async def run_summarize(
                 _UPSERT_METADATA_SQL,
                 row["id"],
                 output.category,
-                json.dumps(output.tags),
-                json.dumps(output.jargon_terms),
+                output.tags,
+                output.jargon_terms,
                 PROMPT_VERSION,
             )
         processed += 1
