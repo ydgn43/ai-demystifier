@@ -11,16 +11,21 @@ what's done and what's next, and is expected to be edited frequently.
 - [x] Demystifier producing level1/level2 JSON per item
 - [x] Ranking function producing a capped, ordered daily feed
 
-## Phase 2 — Frontend
+## Phase 2 — Frontend — DONE
 
-- [ ] Scaffold Next.js app (App Router, TypeScript, Tailwind) in `frontend/`
-- [ ] Feed page: fetch `GET /feed`, render the capped/ordered list
-- [ ] Casual/developer level toggle (switches between `level1` and `level2` body text)
-- [ ] Level 3 = permanent source link (`raw_items.url` via the feed response), always shown alongside the summary
-- [ ] Category badges/filter (Models, Research, Developer Tools, Industry News)
-- [ ] `glossary.json` (~50 terms) + jargon tooltip matching against rendered text
-- [ ] Loading / empty / error states (feed can legitimately be empty early on)
-- [ ] Basic responsive styling
+- [x] Scaffold Next.js app (App Router, TypeScript, Tailwind) in `frontend/`
+- [x] Feed page: fetch `GET /feed`, render the capped/ordered list (forced dynamic — see note below)
+- [x] Casual/developer level toggle (switches between `level1` and `level2` body text)
+- [x] Level 3 = permanent source link (`raw_items.url` via the feed response), always shown alongside the summary
+- [x] Category badges/filter (Models, Research, Developer Tools, Industry News)
+- [x] `glossary.json` (~50 terms) + jargon tooltip matching against rendered text
+- [x] Loading / empty / error states (feed can legitimately be empty early on)
+- [x] Basic responsive styling
+
+Note: `app/page.tsx` sets `export const dynamic = "force-dynamic"`. Next 16
+statically prerenders by default, which would have baked in a single
+build-time snapshot of `/feed` — wrong for a page meant to change with every
+ingest run, not every deploy.
 
 ## Phase 3 — Automation
 
