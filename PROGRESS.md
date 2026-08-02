@@ -27,11 +27,11 @@ statically prerenders by default, which would have baked in a single
 build-time snapshot of `/feed` — wrong for a page meant to change with every
 ingest run, not every deploy.
 
-## Phase 3 — Automation
+## Phase 3 — Automation — DONE (pending Phase 4 wiring)
 
-- [ ] GitHub Actions workflow: daily cron at 06:00 UTC hitting protected `/ingest/run` then `/summarize/run`
-- [ ] Handle the Gemini free-tier rate limit (5 req/min) in `/summarize/run` — pace calls or chunk the cron job, otherwise most of a real batch will fail
-- [ ] Cron secret stored in GitHub Actions secrets, never committed
+- [x] GitHub Actions workflow: daily cron at 06:00 UTC hitting protected `/ingest/run` then `/summarize/run` (`.github/workflows/daily-digest.yml`)
+- [x] Handle the Gemini free-tier rate limit (5 req/min) in `/summarize/run` — calls are now paced ~12.5s apart
+- [ ] Cron secret stored in GitHub Actions secrets, never committed — blocked on Phase 4: needs `BACKEND_URL` (repo variable) and `CRON_SECRET` (repo secret) set once the backend is deployed
 
 ## Phase 4 — Deploy
 
@@ -50,4 +50,4 @@ ingest run, not every deploy.
 
 ## Known follow-ups
 
-- [ ] Gemini free-tier rate limit was hit mid-batch during pipeline testing (2026-08-02) — `/summarize/run` needs request pacing before the cron job can run at scale
+- [ ] `/summarize/run` now takes ~12.5s per item (Gemini free-tier pacing) — a 50-item batch takes ~10-11 minutes. Whatever host is picked for the backend in Phase 4 needs to support a synchronous request that long (watch out for serverless platforms with short execution-time caps); otherwise this needs to become async/chunked.
