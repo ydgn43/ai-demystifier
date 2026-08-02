@@ -6,7 +6,8 @@ _UPSERT_SQL = """
     INSERT INTO raw_items (source, external_id, url, title, raw_text, published_at, metrics_json)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     ON CONFLICT (source, external_id) DO UPDATE
-        SET metrics_json = EXCLUDED.metrics_json,
+        SET raw_text = EXCLUDED.raw_text,
+            metrics_json = EXCLUDED.metrics_json,
             fetched_at = now()
 """
 

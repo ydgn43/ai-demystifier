@@ -43,20 +43,37 @@ raw_items (
 summaries (
   id, item_id, level, body, model, prompt_version
 )
+-- Short feed-list teasers. level 1 = casual, level 2 = developer.
+
+articles (
+  id, item_id, level, body, model, prompt_version
+)
+-- Longer (~150-350 word) in-app reads shown on the item detail page.
+-- Same level convention as summaries (1 = casual, 2 = developer).
+
+item_metadata (
+  id, item_id, category, tags, jargon_terms, prompt_version
+)
 ```
 
-- `level` is `1` (casual) or `2` (developer). There is no separate "level 3" row —
-  level 3 is just the permanent source link (`raw_items.url`), always shown.
+- `level` is `1` (casual) or `2` (developer), in both `summaries` and `articles`.
+  The permanent source link (`raw_items.url`) is always shown too — on the feed
+  card and the detail page — as a secondary "view original source" link, never
+  the only way to read more.
 - `prompt_version` exists so the whole corpus can be cheaply re-summarized when the
   prompt changes. Bump it whenever the summarization prompt changes.
 
 ## The Demystifier pipeline
 
 - One LLM call per item, not one per level. It should return strict JSON:
-  `{level1, level2, category, tags[], jargon_terms[]}`.
+  `{level1, level2, article1, article2, category, tags[], jargon_terms[]}`.
+  `level1`/`level2` are short feed-list teasers; `article1`/`article2` are the
+  longer in-app reads (~150-350 words) shown on the item detail page.
 - Hard rule, non-negotiable: summarize only from the supplied abstract/README text.
   Never state a number, benchmark, or claim that isn't in the source text. A
-  hallucinated figure in a "plain English" summary is worse than no summary.
+  hallucinated figure in a "plain English" summary is worse than no summary. This
+  applies just as much to the longer articles — if the source text is thin, the
+  article should be shorter, not padded with invented detail.
 - Categories: Models, Research, Developer Tools, Industry News.
 - Jargon tooltips come from a static `glossary.json` (~50 terms) matched against
   rendered text — not detected by an LLM at request time.

@@ -27,6 +27,20 @@ statically prerenders by default, which would have baked in a single
 build-time snapshot of `/feed` — wrong for a page meant to change with every
 ingest run, not every deploy.
 
+## Phase 2.5 — In-app article detail page — DONE
+
+Clicking a digest card used to jump straight to the external source with
+nothing readable in between. Added a real in-app article (~150-350 words,
+casual/developer toggle) between the feed teaser and the external link.
+
+- [x] GitHub fetcher now pulls the README (not just the one-line description) so there's real material to write a longer article from
+- [x] `raw_items` upsert now refreshes `raw_text` on conflict (previously only `metrics_json` refreshed, so existing GitHub rows would've kept their thin description forever)
+- [x] Demystifier extended to return `article1`/`article2` in the same single call (`PROMPT_VERSION` bumped to `v2`, which naturally triggers reprocessing of the whole corpus)
+- [x] New `articles` table (`backend/migrations/003_articles.sql`), same shape/versioning as `summaries`
+- [x] `GET /items/{id}` endpoint joining summaries + articles + metadata
+- [x] `/item/[id]` detail page + `ArticleView` component (casual/developer toggle, glossary tooltips, permanent source link)
+- [x] Feed card title links in-app to the detail page; external link relabeled "View original source" and kept as a secondary link
+
 ## Phase 3 — Automation — DONE (pending Phase 4 wiring)
 
 - [x] GitHub Actions workflow: daily cron at 06:00 UTC hitting protected `/ingest/run` then `/summarize/run` (`.github/workflows/daily-digest.yml`)
@@ -48,6 +62,19 @@ ingest run, not every deploy.
 - [ ] Basic monitoring/alerting for cron and fetch failures
 - [ ] Optional: email digest (summaries are kept as structured data specifically so this stays a formatting change, not a rewrite)
 
+## Phase 6 — Learn: foundational articles + catch-up timeline
+
+Deferred by choice (2026-08-02) — the user wants both a foundational,
+progressive-difficulty reference (e.g. "what is RLHF", beginner to advanced,
+organized by topic) and an auto-generated timeline that aggregates already-
+digested items by category so someone can catch up on recent developments.
+Plan this as its own phase once Phase 2.5 has shipped and been used a bit.
+
+- [ ] Decide topic taxonomy for foundational articles (the existing 4 feed categories don't map well onto "beginner to advanced ML concepts")
+- [ ] Foundational reference articles (static content, written once, low-frequency updates)
+- [ ] Timeline view: category-filterable, chronological, built from existing `raw_items`/`summaries`/`articles` data (no new content authoring needed for this half)
+
 ## Known follow-ups
 
-- [ ] `/summarize/run` now takes ~12.5s per item (Gemini free-tier pacing) — a 50-item batch takes ~10-11 minutes. Whatever host is picked for the backend in Phase 4 needs to support a synchronous request that long (watch out for serverless platforms with short execution-time caps); otherwise this needs to become async/chunked.
+- [ ] `/summarize/run` now takes ~12.5s per item (Gemini free-tier pacing), and as of Phase 2.5 does 2x the writes per item (summary + article) though still only 1 LLM call — a 50-item batch still takes ~10-11 minutes. Whatever host is picked for the backend in Phase 4 needs to support a synchronous request that long (watch out for serverless platforms with short execution-time caps); otherwise this needs to become async/chunked.
+- [ ] GitHub README fetch adds ~25 extra GitHub API requests per ingest run (1 search + 25 READMEs). Unauthenticated GitHub API is capped at 60 req/hr, which is tight — `GITHUB_TOKEN` (already an optional env var) is effectively required now, not just a nice-to-have for search rate limits.

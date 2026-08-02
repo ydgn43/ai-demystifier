@@ -33,6 +33,13 @@ _UPSERT_SUMMARY_SQL = """
         SET body = EXCLUDED.body, model = EXCLUDED.model
 """
 
+_UPSERT_ARTICLE_SQL = """
+    INSERT INTO articles (item_id, level, body, model, prompt_version)
+    VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT (item_id, level, prompt_version) DO UPDATE
+        SET body = EXCLUDED.body, model = EXCLUDED.model
+"""
+
 _UPSERT_METADATA_SQL = """
     INSERT INTO item_metadata (item_id, category, tags, jargon_terms, prompt_version)
     VALUES ($1, $2, $3, $4, $5)
@@ -66,6 +73,12 @@ async def run_summarize(
                 )
                 await conn.execute(
                     _UPSERT_SUMMARY_SQL, row["id"], 2, output.level2, MODEL_NAME, PROMPT_VERSION
+                )
+                await conn.execute(
+                    _UPSERT_ARTICLE_SQL, row["id"], 1, output.article1, MODEL_NAME, PROMPT_VERSION
+                )
+                await conn.execute(
+                    _UPSERT_ARTICLE_SQL, row["id"], 2, output.article2, MODEL_NAME, PROMPT_VERSION
                 )
                 await conn.execute(
                     _UPSERT_METADATA_SQL,

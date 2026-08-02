@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { FeedItem } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 
@@ -31,7 +32,11 @@ export function FeedCard({
         <span className="text-slate-400 dark:text-slate-600">{item.source}</span>
       </div>
 
-      <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">{item.title}</h2>
+      <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+        <Link href={`/item/${item.id}`} className="hover:underline">
+          {item.title}
+        </Link>
+      </h2>
 
       <p className="mt-2 leading-relaxed text-slate-700 dark:text-slate-300">
         {level === "developer" ? renderWithGlossary(body) : body}
@@ -50,14 +55,22 @@ export function FeedCard({
         </div>
       )}
 
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 inline-block text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900 dark:text-white dark:decoration-slate-700 dark:hover:decoration-white"
-      >
-        Read the source &rarr;
-      </a>
+      <div className="mt-3 flex items-center gap-4 text-sm">
+        <Link
+          href={`/item/${item.id}`}
+          className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900 dark:text-white dark:decoration-slate-700 dark:hover:decoration-white"
+        >
+          Read more &rarr;
+        </Link>
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          View original source
+        </a>
+      </div>
     </li>
   );
 }
