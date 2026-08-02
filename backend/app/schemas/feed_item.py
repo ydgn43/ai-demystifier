@@ -1,0 +1,17 @@
+from datetime import datetime
+
+from pydantic import BaseModel
+
+
+class FeedItem(BaseModel):
+    id: int
+    source: str
+    url: str
+    title: str
+    level1: str
+    level2: str
+    category: str
+    tags: list[str]
+    jargon_terms: list[str]
+    published_at: datetime | None
+    score: float
