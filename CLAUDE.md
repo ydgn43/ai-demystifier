@@ -4,7 +4,7 @@ A web app that ingests AI news from Hugging Face, arXiv, and GitHub, runs it thr
 an LLM "Demystifier" pipeline, and serves a daily plain-English digest with a
 casual/developer explain-level toggle.
 
-Status: MVP build, Week 1 (ingestion + schema).
+Status: see `PROGRESS.md` for current phase.
 
 ## Goal (read this first)
 
@@ -84,9 +84,7 @@ treat it as a first-class, frequently-edited piece of logic, not a one-off scrip
 - If a source fetch fails, the pipeline should still ship the feed without it —
   partial failure must be non-fatal.
 
-## Current phase checklist
+## Current progress
 
-- [x] `raw_items` + `summaries` tables created with the dedupe constraint
-- [x] HF / GitHub / arXiv fetchers landing rows in `raw_items`
-- [x] Demystifier producing level1/level2 JSON per item
-- [x] Ranking function producing a capped, ordered daily feed
+See `PROGRESS.md` for the phase-by-phase checklist. That file is expected to
+change often; this one isn't — don't duplicate the checklist back into here.
