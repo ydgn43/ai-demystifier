@@ -18,7 +18,7 @@ actually broken down — flag it and ask first, don't just add it.
 - Frontend: Next.js (App Router), React, TypeScript, Tailwind CSS
 - Backend: Python, FastAPI
 - Database: PostgreSQL (Neon or Supabase)
-- LLM: Anthropic API, Claude Haiku 4.5 for the summarization pipeline
+- LLM: Google Gemini API (free tier), Gemini 2.5 Flash for the summarization pipeline
 - Deploy: Vercel (frontend), same Postgres provider for hosted DB
 - Cron: GitHub Actions hitting a protected endpoint, daily at 06:00 UTC
 
@@ -88,5 +88,5 @@ treat it as a first-class, frequently-edited piece of logic, not a one-off scrip
 
 - [x] `raw_items` + `summaries` tables created with the dedupe constraint
 - [x] HF / GitHub / arXiv fetchers landing rows in `raw_items`
-- [ ] Demystifier producing level1/level2 JSON per item
+- [x] Demystifier producing level1/level2 JSON per item
 - [ ] Ranking function producing a capped, ordered daily feed
