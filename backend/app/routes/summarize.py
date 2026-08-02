@@ -1,3 +1,5 @@
+import asyncio
+
 import asyncpg
 from fastapi import APIRouter, Depends, Query
 
@@ -6,6 +8,12 @@ from app.deps import require_cron_secret
 from app.pipeline.demystifier import MODEL_NAME, PROMPT_VERSION, demystify
 
 router = APIRouter()
+
+# Gemini's free tier caps generate_content calls per minute (5 for
+# gemini-2.5-flash as of writing); pace requests to stay under it instead of
+# racing ahead and burning most of a cron batch on 429s.
+_GEMINI_FREE_TIER_RPM = 5
+_SECONDS_BETWEEN_CALLS = 60 / _GEMINI_FREE_TIER_RPM + 0.5
 
 _SELECT_UNSUMMARIZED_SQL = """
     SELECT id, title, raw_text
@@ -46,29 +54,33 @@ async def run_summarize(
     processed = 0
     errors = []
     # One item's LLM call failing must not stop the rest of the batch.
-    for row in rows:
+    for index, row in enumerate(rows):
         try:
             output = await demystify(row["title"], row["raw_text"])
         except Exception as exc:
             errors.append({"item_id": row["id"], "error": str(exc)})
-            continue
+        else:
+            async with pool.acquire() as conn, conn.transaction():
+                await conn.execute(
+                    _UPSERT_SUMMARY_SQL, row["id"], 1, output.level1, MODEL_NAME, PROMPT_VERSION
+                )
+                await conn.execute(
+                    _UPSERT_SUMMARY_SQL, row["id"], 2, output.level2, MODEL_NAME, PROMPT_VERSION
+                )
+                await conn.execute(
+                    _UPSERT_METADATA_SQL,
+                    row["id"],
+                    output.category,
+                    output.tags,
+                    output.jargon_terms,
+                    PROMPT_VERSION,
+                )
+            processed += 1
 
-        async with pool.acquire() as conn, conn.transaction():
-            await conn.execute(
-                _UPSERT_SUMMARY_SQL, row["id"], 1, output.level1, MODEL_NAME, PROMPT_VERSION
-            )
-            await conn.execute(
-                _UPSERT_SUMMARY_SQL, row["id"], 2, output.level2, MODEL_NAME, PROMPT_VERSION
-            )
-            await conn.execute(
-                _UPSERT_METADATA_SQL,
-                row["id"],
-                output.category,
-                output.tags,
-                output.jargon_terms,
-                PROMPT_VERSION,
-            )
-        processed += 1
+        # Pace regardless of success/failure — a 429 still counts against
+        # the per-minute quota, so racing ahead after one just causes more.
+        if index < len(rows) - 1:
+            await asyncio.sleep(_SECONDS_BETWEEN_CALLS)
 
     return {
         "candidates": len(rows),

@@ -1,0 +1,34 @@
+name: Daily Digest
+
+# Requires repo config once the backend is deployed (see PROGRESS.md Phase 4):
+#   - Settings > Secrets and variables > Actions > Variables: BACKEND_URL
+#   - Settings > Secrets and variables > Actions > Secrets: CRON_SECRET (same
+#     value as the backend's CRON_SECRET env var)
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      BACKEND_URL: ${{ vars.BACKEND_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Ingest raw items
+        run: |
+          curl -sS -f --max-time 120 -X POST "$BACKEND_URL/ingest/run" \
+            -H "X-Cron-Secret: $CRON_SECRET"
+
+      # /summarize/run paces Gemini free-tier calls at ~12.5s apart, so a
+      # full batch of 50 can take ~10-11 minutes — this is expected, not a hang.
+      - name: Summarize new items
+        run: |
+          curl -sS -f --max-time 1200 -X POST "$BACKEND_URL/summarize/run?limit=50" \
+            -H "X-Cron-Secret: $CRON_SECRET"
