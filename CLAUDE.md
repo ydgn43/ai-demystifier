@@ -89,4 +89,4 @@ treat it as a first-class, frequently-edited piece of logic, not a one-off scrip
 - [x] `raw_items` + `summaries` tables created with the dedupe constraint
 - [x] HF / GitHub / arXiv fetchers landing rows in `raw_items`
 - [x] Demystifier producing level1/level2 JSON per item
-- [ ] Ranking function producing a capped, ordered daily feed
+- [x] Ranking function producing a capped, ordered daily feed
