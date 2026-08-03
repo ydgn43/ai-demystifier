@@ -19,6 +19,11 @@ export type FeedResponse = {
   this_week: FeedItem[];
 };
 
+export type TimelineResponse = {
+  items: FeedItem[];
+  next_cursor: string | null;
+};
+
 export type ItemDetail = {
   id: number;
   source: string;

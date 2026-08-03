@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getFeed } from "@/lib/api";
+import { LEARN_ARTICLES } from "@/lib/learn-content";
 
 const SITE_URL = process.env.SITE_URL ?? "http://localhost:3000";
 
@@ -14,6 +15,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: SITE_URL, changeFrequency: "hourly", priority: 1 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${SITE_URL}/timeline`, changeFrequency: "hourly", priority: 0.5 },
+    { url: `${SITE_URL}/learn`, changeFrequency: "monthly", priority: 0.5 },
+    ...LEARN_ARTICLES.map((article) => ({
+      url: `${SITE_URL}/learn/${article.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.4,
+    })),
     ...items.map((item) => ({
       url: `${SITE_URL}/item/${item.id}`,
       lastModified: item.published_at ?? undefined,

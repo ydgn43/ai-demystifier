@@ -25,6 +25,20 @@ export function Header() {
           </form>
 
           <Link
+            href="/timeline"
+            className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            Timeline
+          </Link>
+
+          <Link
+            href="/learn"
+            className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            Learn
+          </Link>
+
+          <Link
             href="/about"
             className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >

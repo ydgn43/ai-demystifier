@@ -102,17 +102,18 @@ storage) that CLAUDE.md says to flag before adding, not just build.
 - [ ] Basic monitoring/alerting for cron and fetch failures
 - [ ] Optional: email digest (summaries are kept as structured data specifically so this stays a formatting change, not a rewrite)
 
-## Phase 6 — Learn: foundational articles + catch-up timeline
+## Phase 6 — Learn: foundational articles + catch-up timeline — DONE
 
-Deferred by choice (2026-08-02) — the user wants both a foundational,
-progressive-difficulty reference (e.g. "what is RLHF", beginner to advanced,
-organized by topic) and an auto-generated timeline that aggregates already-
-digested items by category so someone can catch up on recent developments.
-Plan this as its own phase once Phase 2.5 has shipped and been used a bit.
+Picked back up 2026-08-03 ("let's start with phase 6"). User chose a tight
+~10-article fundamentals set for Learn (not a broad 20-30 article library,
+not a mechanical glossary expansion) over the two other scope options
+presented.
 
-- [ ] Decide topic taxonomy for foundational articles (the existing 4 feed categories don't map well onto "beginner to advanced ML concepts")
-- [ ] Foundational reference articles (static content, written once, low-frequency updates)
-- [ ] Timeline view: category-filterable, chronological, built from existing `raw_items`/`summaries`/`articles` data (no new content authoring needed for this half)
+- [x] `GET /timeline?category=&before=&limit=` (new `backend/app/routes/timeline.py`) — reverse-chronological over the same join `/feed`/`/search` use, cursor-paginated on `fetched_at` (stable, non-null), optional category filter; new `TimelineResponse` schema, `score` unused/`0.0` here since this view is chronological, not ranked
+- [x] `frontend/src/app/timeline/page.tsx` — plain server component (no client JS): category filter and "Older →" pagination are just links with query params, consistent with the search page and respecting `BACKEND_API_URL` staying server-only. Results grouped under date headers, reuses `FeedCard`
+- [x] `frontend/src/lib/learn-content.ts` — 10 hand-written articles (beginner→advanced: what is an LLM, transformers, training vs inference, fine-tuning, RAG, agents, open weights vs API models, quantization, evaluation/benchmarks, alignment basics). Static data file, no DB/backend involvement — matches "written once, low-frequency updates," avoids new infrastructure for content that doesn't need it
+- [x] `/learn` index (grouped by level) + `/learn/[slug]` (via `generateStaticParams`, so these prerender as static HTML at build time — genuinely static content, unlike the digest pages) — reuses `renderWithGlossary()` on article bodies
+- [x] Header nav updated (Timeline, Learn), both added to `sitemap.ts`
 
 ## Known follow-ups
 
