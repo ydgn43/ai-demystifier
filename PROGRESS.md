@@ -89,6 +89,7 @@ Plan this as its own phase once Phase 2.5 has shipped and been used a bit.
 
 ## Known follow-ups
 
-- [ ] `/summarize/run` per-item time is now bound by local Ollama generation speed instead of Gemini's rate limit — needs re-measuring on real hardware (RTX 4060 Ti, qwen2.5:7b-instruct) once the catch-up run is redone. Whatever host is picked for the backend in Phase 4 needs to support however long that turns out to be as one synchronous request (watch out for serverless platforms with short execution-time caps); otherwise this needs to become async/chunked.
+- [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.
+- [ ] Article length (`article1`/`article2`) caps around 100-110 words with qwen2.5:7b-instruct even with explicit "150+ words" prompting and `num_predict` raised — a real instruction-following ceiling for this model size, not a bug. Accepted as-is (2026-08-03); revisit if it feels too thin in practice (options: few-shot prompting, a bigger model).
 - [ ] GitHub README fetch adds ~25 extra GitHub API requests per ingest run (1 search + 25 READMEs). Unauthenticated GitHub API is capped at 60 req/hr, which is tight — `GITHUB_TOKEN` (already an optional env var) is effectively required now, not just a nice-to-have for search rate limits.
 - [ ] Local-Ollama-vs-Phase-4-deploy tension (see Phase 4) is unresolved — needs a decision before deploy can proceed.
