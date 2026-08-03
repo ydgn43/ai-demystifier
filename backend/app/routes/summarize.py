@@ -33,12 +33,18 @@ _UPSERT_ARTICLE_SQL = """
 """
 
 _UPSERT_METADATA_SQL = """
-    INSERT INTO item_metadata (item_id, category, tags, jargon_terms, prompt_version)
-    VALUES ($1, $2, $3, $4, $5)
+    INSERT INTO item_metadata (
+        item_id, category, tags, jargon_terms, prompt_version,
+        headline, why_it_matters_casual, why_it_matters_developer
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     ON CONFLICT (item_id, prompt_version) DO UPDATE
         SET category = EXCLUDED.category,
             tags = EXCLUDED.tags,
-            jargon_terms = EXCLUDED.jargon_terms
+            jargon_terms = EXCLUDED.jargon_terms,
+            headline = EXCLUDED.headline,
+            why_it_matters_casual = EXCLUDED.why_it_matters_casual,
+            why_it_matters_developer = EXCLUDED.why_it_matters_developer
 """
 
 
@@ -79,6 +85,9 @@ async def run_summarize(
                     output.tags,
                     output.jargon_terms,
                     PROMPT_VERSION,
+                    output.headline,
+                    output.why_it_matters_casual,
+                    output.why_it_matters_developer,
                 )
             processed += 1
 

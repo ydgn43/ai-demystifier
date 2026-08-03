@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import glossaryData from "./glossary.json";
+import { JargonTooltip } from "@/components/JargonTooltip";
 
 const glossary: Record<string, string> = glossaryData;
 
@@ -18,9 +19,9 @@ const matchPattern = new RegExp(
   "gi",
 );
 
-// Wraps glossary terms found in `text` with a native <abbr> tooltip. Matching
+// Wraps glossary terms found in `text` with an interactive tooltip. Matching
 // happens against the static glossary, not per-item LLM output, per CLAUDE.md.
-export function renderWithGlossary(text: string): ReactNode {
+export function renderWithGlossary(text: string, accentColor: string): ReactNode {
   return text.split(matchPattern).map((part, i) => {
     const lower = part.toLowerCase();
     const definition = glossary[lower] ?? glossary[lower.replace(/s$/, "")];
@@ -28,13 +29,7 @@ export function renderWithGlossary(text: string): ReactNode {
       return part;
     }
     return (
-      <abbr
-        key={i}
-        title={definition}
-        className="cursor-help underline decoration-dotted decoration-slate-400 underline-offset-2"
-      >
-        {part}
-      </abbr>
+      <JargonTooltip key={i} term={part} definition={definition} accentColor={accentColor} />
     );
   });
 }

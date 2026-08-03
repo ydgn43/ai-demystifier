@@ -8,6 +8,7 @@ class FeedItem(BaseModel):
     source: str
     url: str
     title: str
+    headline: str
     level1: str
     level2: str
     category: str

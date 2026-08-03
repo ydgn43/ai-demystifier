@@ -1,89 +1,102 @@
 "use client";
 
 import { useState } from "react";
-import type { ItemDetail } from "@/lib/types";
+import Link from "next/link";
+import type { ItemDetail, Level } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 import { formatDate } from "@/lib/date";
-
-const LEVELS = ["casual", "developer"] as const;
-type Level = (typeof LEVELS)[number];
-
-const CATEGORY_STYLES: Record<string, string> = {
-  Models: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300",
-  Research: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
-  "Developer Tools": "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  "Industry News": "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
-};
+import { accentColorFor } from "@/lib/theme";
+import { LevelToggle } from "@/components/LevelToggle";
 
 export function ArticleView({ item }: { item: ItemDetail }) {
   const [level, setLevel] = useState<Level>("casual");
+  const [animKey, setAnimKey] = useState(0);
+  const accentColor = accentColorFor(level);
+
+  const handleLevelChange = (l: Level) => {
+    setLevel(l);
+    setAnimKey((k) => k + 1);
+  };
+
   const article = level === "developer" ? item.article2 : item.article1;
   const paragraphs = article.split(/\n+/).filter((p) => p.trim().length > 0);
+  const whyItMatters =
+    level === "developer" ? item.why_it_matters_developer : item.why_it_matters_casual;
   const date = formatDate(item.published_at);
+  const meta = [item.source, date].filter(Boolean).join(" · ");
 
   return (
-    <article>
-      <div className="flex items-center gap-2 text-xs">
-        <span
-          className={`rounded-full px-2 py-0.5 font-medium ${
-            CATEGORY_STYLES[item.category] ??
-            "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-          }`}
+    <div>
+      <div className="sticky top-14 z-20 flex items-center justify-between border-b border-hairline bg-bg py-3">
+        <Link
+          href="/"
+          className="font-mono text-[11px] font-medium tracking-[0.06em] text-muted uppercase hover:text-ink"
         >
-          {item.category}
-        </span>
-        <span className="text-slate-400 dark:text-slate-600">{item.source}</span>
-        {date && <span className="text-slate-400 dark:text-slate-600">&middot; {date}</span>}
+          &larr; Back
+        </Link>
+        <LevelToggle level={level} onChange={handleLevelChange} accentColor={accentColor} />
       </div>
 
-      <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-        {item.title}
-      </h1>
-
-      <div className="mt-4 flex gap-1 rounded-full bg-slate-100 p-1 dark:bg-slate-800 w-fit">
-        {LEVELS.map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setLevel(option)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-              level === option
-                ? "bg-white text-slate-900 shadow dark:bg-slate-950 dark:text-white"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-            }`}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-6 space-y-4 leading-relaxed text-slate-700 dark:text-slate-300">
-        {paragraphs.map((paragraph, i) => (
-          <p key={i}>{level === "developer" ? renderWithGlossary(paragraph) : paragraph}</p>
-        ))}
-      </div>
-
-      {item.tags.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-1.5">
-          {item.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-            >
-              {tag}
-            </span>
-          ))}
+      <div className="pt-10">
+        <div className="mb-3 flex flex-wrap items-center gap-2 font-mono text-[11px] font-medium tracking-wide text-muted">
+          <span className="rounded-[2px] border border-hairline px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-ink">
+            {item.category.toUpperCase()}
+          </span>
+          <span>{meta}</span>
         </div>
-      )}
 
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-6 inline-block text-sm font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900 dark:text-white dark:decoration-slate-700 dark:hover:decoration-white"
-      >
-        View original source &rarr;
-      </a>
-    </article>
+        <h1 className="mb-2 font-sans text-[28px] font-semibold leading-[1.25] text-ink">
+          {item.headline}
+        </h1>
+
+        <p className="mb-7 font-mono text-xs tracking-wide text-muted">{item.title}</p>
+
+        <div className="border-t border-hairline pt-7">
+          <div key={`article-${animKey}`} className="summary-fade mb-6">
+            {paragraphs.map((paragraph, i) => (
+              <p key={i} className="mb-6 font-sans text-[17px] leading-[1.7] text-ink last:mb-0">
+                {level === "developer" ? renderWithGlossary(paragraph, accentColor) : paragraph}
+              </p>
+            ))}
+          </div>
+
+          <div className="mb-7 border-l-2 pl-4" style={{ borderColor: accentColor }}>
+            <div
+              className="mb-2 font-mono text-[10px] font-semibold tracking-[0.1em] uppercase"
+              style={{ color: accentColor }}
+            >
+              Why this matters
+            </div>
+            <p
+              key={`why-${animKey}`}
+              className="summary-fade font-sans text-[15px] leading-[1.6] text-muted"
+            >
+              {whyItMatters}
+            </p>
+          </div>
+
+          <div className="mb-7 flex flex-wrap gap-2">
+            {[item.category, item.source].map((tag) => (
+              <span
+                key={tag}
+                className="rounded-[2px] border border-hairline px-2 py-[3px] font-mono text-[10px] tracking-[0.06em] text-muted"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <a
+            href={item.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-[3px] px-5 py-2.5 font-mono text-xs font-medium tracking-[0.06em] text-white uppercase transition-colors"
+            style={{ background: accentColor }}
+          >
+            View source &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
   );
 }

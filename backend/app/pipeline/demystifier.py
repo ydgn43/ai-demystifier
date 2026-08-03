@@ -10,7 +10,7 @@ from app.config import settings
 MODEL_NAME = "qwen2.5:7b-instruct"
 
 # Bump whenever the prompt below changes, so the corpus can be re-summarized cheaply.
-PROMPT_VERSION = "v3"
+PROMPT_VERSION = "v4"
 
 CATEGORIES = ["Models", "Research", "Developer Tools", "Industry News"]
 
@@ -27,6 +27,11 @@ text is thin, write a shorter article rather than padding it with invented detai
 still aim for the word counts below wherever the source text supports it).
 
 Return:
+- headline: a rewritten, plain-English headline (one short sentence, no jargon) that
+  captures the newsworthy point of this item — NOT a copy or light edit of the supplied
+  title, which is often a formal paper/repo name. E.g. given the title
+  "VLM-8B: Document-QA Parity at 4-bit Quantization", a good headline is "A small open
+  model now reads charts and screenshots about as well as the expensive ones."
 - level1: a casual, jargon-free teaser (2-3 sentences) for a general reader, used in a
   scannable feed list.
 - level2: a more technical teaser (2-4 sentences) for a developer audience, same feed-list
@@ -40,6 +45,11 @@ Return:
   200-350) across 2-4 short paragraphs. Assume the reader already knows standard ML/AI
   terminology (use it precisely and don't re-explain basics) and go into more technical
   depth than level2 — more mechanism, more of what's actually novel here.
+- why_it_matters_casual: one sentence, casual register, on why a general reader should
+  care about this — the practical or human significance, not a restatement of what it is.
+- why_it_matters_developer: one sentence, developer register, on why a developer should
+  care about this — the practical consequence for someone building things, not a
+  restatement of what it is.
 - category: exactly one of Models, Research, Developer Tools, Industry News.
 - tags: 2-5 short topical tags (lowercase).
 - jargon_terms: technical terms used in level2/article2 that a general reader likely
@@ -48,10 +58,13 @@ Return:
 
 
 class DemystifierOutput(BaseModel):
+    headline: str
     level1: str
     level2: str
     article1: str
     article2: str
+    why_it_matters_casual: str
+    why_it_matters_developer: str
     category: Literal["Models", "Research", "Developer Tools", "Industry News"]
     tags: list[str]
     jargon_terms: list[str]
@@ -72,7 +85,7 @@ async def demystify(title: str, raw_text: str | None) -> DemystifierOutput:
         ],
         format=DemystifierOutput.model_json_schema(),
         # num_predict: Ollama's chat default can be low enough to truncate a
-        # response this size (4 text fields + metadata in one JSON object).
-        options={"temperature": 0.3, "num_predict": 2048},
+        # response this size (7 text fields + metadata in one JSON object).
+        options={"temperature": 0.3, "num_predict": 2560},
     )
     return DemystifierOutput.model_validate_json(response.message.content)

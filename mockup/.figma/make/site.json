@@ -1,0 +1,10 @@
+{
+  "description": "Easily create, edit, and share markdown documents with a user-friendly interface, perfect for writers, developers, and teams looking for efficient collaboration.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getTimeline } from "@/lib/api";
 import { TimelineResults } from "@/components/timeline/TimelineResults";
+import { EmptyState } from "@/components/EmptyState";
 import type { Category } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -27,21 +28,17 @@ export default async function TimelinePage({
   const result = await getTimeline({ category, before });
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-10">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-        Timeline
-      </h1>
-      <p className="mt-1 text-slate-500 dark:text-slate-400">
+    <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
+      <h1 className="mt-8 font-sans text-2xl font-semibold text-ink">Timeline</h1>
+      <p className="mt-1 font-sans text-sm text-muted">
         Everything digested, in order — a way to catch up on what you missed.
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2 border-b border-slate-200 pb-4 dark:border-slate-800">
+      <div className="mt-6 flex flex-wrap gap-2 border-b border-hairline pb-4">
         <Link
           href="/timeline"
-          className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-            !category
-              ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-              : "border-slate-300 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:text-slate-400"
+          className={`rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase transition-colors ${
+            !category ? "border-ink bg-ink text-white" : "border-hairline text-muted hover:border-ink"
           }`}
         >
           All
@@ -50,10 +47,10 @@ export default async function TimelinePage({
           <Link
             key={cat}
             href={filterHref(cat)}
-            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            className={`rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase transition-colors ${
               category === cat
-                ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-                : "border-slate-300 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:text-slate-400"
+                ? "border-ink bg-ink text-white"
+                : "border-hairline text-muted hover:border-ink"
             }`}
           >
             {cat}
@@ -62,11 +59,9 @@ export default async function TimelinePage({
       </div>
 
       {!result.ok ? (
-        <p className="py-16 text-center text-red-600 dark:text-red-400">
-          Couldn&apos;t load the timeline: {result.error}
-        </p>
+        <EmptyState message="Couldn't load the timeline." hint={result.error} />
       ) : result.items.length === 0 ? (
-        <p className="py-16 text-center text-slate-500 dark:text-slate-400">Nothing here yet.</p>
+        <EmptyState message="Nothing here yet." />
       ) : (
         <>
           <TimelineResults items={result.items} />
@@ -77,7 +72,7 @@ export default async function TimelinePage({
                 ...(category ? { category } : {}),
                 before: result.next_cursor,
               })}`}
-              className="mt-8 self-center text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              className="mt-8 self-center font-mono text-[11px] font-medium tracking-[0.05em] text-muted uppercase hover:text-ink"
             >
               Older &rarr;
             </Link>

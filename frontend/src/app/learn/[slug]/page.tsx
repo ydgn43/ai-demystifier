@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { LEARN_ARTICLES, LEVEL_STYLES, getLearnArticle } from "@/lib/learn-content";
+import { LEARN_ARTICLES, LEVEL_BADGE_CLASS, getLearnArticle } from "@/lib/learn-content";
 import { renderWithGlossary } from "@/lib/glossary";
 import { readingTimeMinutes } from "@/lib/reading-time";
 import { searchItems } from "@/lib/api";
 import { FeedCard } from "@/components/FeedCard";
 import { MarkReadButton } from "@/components/learn/MarkReadButton";
+import { ACCENT_CASUAL } from "@/lib/theme";
 
 // The article text is static, but "Related right now" pulls live digest
 // data — generateStaticParams would bake that in at build time and it
@@ -49,64 +50,64 @@ export default async function LearnArticlePage({
   const related = relatedResult.ok ? relatedResult.items.slice(0, 3) : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-10">
+    <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
       <Link
         href="/learn"
-        className="mb-6 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        className="mt-8 mb-6 font-mono text-[11px] font-medium tracking-[0.06em] text-muted uppercase hover:text-ink"
       >
         &larr; Back to Learn
       </Link>
 
-      <div className="flex items-center gap-2 text-xs">
-        <span
-          className={`rounded-full px-2 py-0.5 font-medium capitalize ${LEVEL_STYLES[article.level]}`}
-        >
-          {article.level}
-        </span>
-        <span className="text-slate-400 dark:text-slate-600">
-          {readingTimeMinutes(article.body)} min read
-        </span>
+      <div className="flex items-center gap-2 font-mono text-[11px] font-medium tracking-wide text-muted">
+        <span className={LEVEL_BADGE_CLASS}>{article.level}</span>
+        <span>{readingTimeMinutes(article.body)} min read</span>
       </div>
 
-      <div className="mt-2 flex items-center gap-3">
+      <div className="mt-3 flex items-center gap-3">
         <span className="text-3xl">{article.icon}</span>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {article.title}
-        </h1>
+        <h1 className="font-sans text-2xl font-semibold text-ink">{article.title}</h1>
       </div>
 
       <div className="mt-4">
         <MarkReadButton slug={article.slug} />
       </div>
 
-      <div className="mt-6 space-y-4 leading-relaxed text-slate-700 dark:text-slate-300">
+      <div className="mt-6 space-y-4 font-sans leading-relaxed text-ink">
         {article.body.map((paragraph, i) => (
-          <p key={i}>{renderWithGlossary(paragraph)}</p>
+          <p key={i}>{renderWithGlossary(paragraph, ACCENT_CASUAL)}</p>
         ))}
       </div>
 
       {related.length > 0 && (
-        <div className="mt-10 border-t border-slate-200 pt-6 dark:border-slate-800">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        <div className="mt-10 border-t border-hairline pt-6">
+          <h2 className="font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
             Related right now
           </h2>
-          <ul className="mt-1 divide-y divide-slate-200 dark:divide-slate-800">
+          <ul className="mt-3 flex flex-col gap-3">
             {related.map((item) => (
-              <FeedCard key={item.id} item={item} level="casual" />
+              <FeedCard
+                key={item.id}
+                item={item}
+                level="casual"
+                accentColor={ACCENT_CASUAL}
+                animKey={0}
+              />
             ))}
           </ul>
         </div>
       )}
 
       {(prev || next) && (
-        <div className="mt-10 grid grid-cols-2 gap-3 border-t border-slate-200 pt-6 dark:border-slate-800">
+        <div className="mt-10 grid grid-cols-2 gap-3 border-t border-hairline pt-6">
           {prev ? (
             <Link
               href={`/learn/${prev.slug}`}
-              className="rounded-xl border border-slate-200 p-4 transition-colors hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-600"
+              className="border border-hairline p-4 transition-colors hover:border-ink"
             >
-              <span className="text-xs text-slate-400 dark:text-slate-500">&larr; Previous</span>
-              <p className="mt-1 font-semibold text-slate-900 dark:text-white">{prev.title}</p>
+              <span className="font-mono text-[10px] tracking-wide text-muted uppercase">
+                &larr; Previous
+              </span>
+              <p className="mt-1 font-sans font-semibold text-ink">{prev.title}</p>
             </Link>
           ) : (
             <div />
@@ -114,10 +115,12 @@ export default async function LearnArticlePage({
           {next ? (
             <Link
               href={`/learn/${next.slug}`}
-              className="rounded-xl border border-slate-200 p-4 text-right transition-colors hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-600"
+              className="border border-hairline p-4 text-right transition-colors hover:border-ink"
             >
-              <span className="text-xs text-slate-400 dark:text-slate-500">Next &rarr;</span>
-              <p className="mt-1 font-semibold text-slate-900 dark:text-white">{next.title}</p>
+              <span className="font-mono text-[10px] tracking-wide text-muted uppercase">
+                Next &rarr;
+              </span>
+              <p className="mt-1 font-sans font-semibold text-ink">{next.title}</p>
             </Link>
           ) : (
             <div />

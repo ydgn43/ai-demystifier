@@ -1,16 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Category, FeedItem } from "@/lib/types";
+import type { Category, FeedItem, Level } from "@/lib/types";
 import { FeedCard } from "@/components/FeedCard";
+import { EmptyState } from "@/components/EmptyState";
+import { LevelToggle } from "@/components/LevelToggle";
 import { useReadProgress } from "@/lib/read-progress";
+import { accentColorFor } from "@/lib/theme";
 
 const CATEGORIES: Category[] = ["Models", "Research", "Developer Tools", "Industry News"];
 const CATEGORY_FILTERS = ["All", ...CATEGORIES] as const;
 type CategoryFilter = (typeof CATEGORY_FILTERS)[number];
-
-const LEVELS = ["casual", "developer"] as const;
-type Level = (typeof LEVELS)[number];
 
 function groupByCategory(items: FeedItem[]): [Category, FeedItem[]][] {
   return CATEGORIES.map(
@@ -21,27 +21,33 @@ function groupByCategory(items: FeedItem[]): [Category, FeedItem[]][] {
 function CategoryGroups({
   items,
   level,
+  accentColor,
+  animKey,
   readItems,
   toggleRead,
 }: {
   items: FeedItem[];
   level: Level;
+  accentColor: string;
+  animKey: number;
   readItems: Set<number>;
   toggleRead: (id: number) => void;
 }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {groupByCategory(items).map(([category, group]) => (
         <div key={category}>
-          <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
+          <h3 className="mb-2 font-mono text-[11px] font-semibold tracking-[0.06em] text-muted uppercase">
             {category} ({group.length})
           </h3>
-          <ul className="mt-1 divide-y divide-slate-200 dark:divide-slate-800">
+          <ul className="flex flex-col gap-3">
             {group.map((item) => (
               <FeedCard
                 key={item.id}
                 item={item}
                 level={level}
+                accentColor={accentColor}
+                animKey={animKey}
                 isRead={readItems.has(item.id)}
                 onToggleRead={() => toggleRead(item.id)}
               />
@@ -55,8 +61,15 @@ function CategoryGroups({
 
 export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedItem[] }) {
   const [level, setLevel] = useState<Level>("casual");
+  const [animKey, setAnimKey] = useState(0);
   const [category, setCategory] = useState<CategoryFilter>("All");
   const { readItems, toggleRead } = useReadProgress();
+  const accentColor = accentColorFor(level);
+
+  const handleLevelChange = (l: Level) => {
+    setLevel(l);
+    setAnimKey((k) => k + 1);
+  };
 
   const filteredToday = useMemo(
     () => (category === "All" ? today : today.filter((item) => item.category === category)),
@@ -73,34 +86,19 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
-        <div className="flex gap-1 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
-          {LEVELS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => setLevel(option)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-                level === option
-                  ? "bg-white text-slate-900 shadow dark:bg-slate-950 dark:text-white"
-                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-              }`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+      <div className="sticky top-14 z-20 flex flex-col items-center gap-3 border-b border-hairline bg-bg py-4">
+        <LevelToggle level={level} onChange={handleLevelChange} accentColor={accentColor} showLabel />
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {CATEGORY_FILTERS.map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => setCategory(option)}
-              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase transition-colors ${
                 category === option
-                  ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-                  : "border-slate-300 text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:text-slate-400"
+                  ? "border-ink bg-ink text-white"
+                  : "border-hairline text-muted hover:border-ink"
               }`}
             >
               {option}
@@ -110,25 +108,25 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
       </div>
 
       {filteredToday.length === 0 && filteredThisWeek.length === 0 ? (
-        <p className="py-16 text-center text-slate-500 dark:text-slate-400">
-          No items in this category yet.
-        </p>
+        <EmptyState message="No items in this category yet." />
       ) : (
-        <div className="space-y-10">
-          <p className="mt-4 text-right text-xs text-slate-400 dark:text-slate-500">
+        <div className="mt-5 space-y-10">
+          <p className="text-right font-mono text-[11px] tracking-wide text-muted">
             {readCount} of {visibleCount} read
           </p>
 
           <section>
-            <h2 className="mb-3 text-lg font-bold text-slate-900 dark:text-white">Today</h2>
+            <h2 className="mb-3 font-sans text-lg font-semibold text-ink">Today</h2>
             {filteredToday.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="font-sans text-sm text-muted">
                 No new items yet today — here&apos;s what&apos;s been happening this week.
               </p>
             ) : (
               <CategoryGroups
                 items={filteredToday}
                 level={level}
+                accentColor={accentColor}
+                animKey={animKey}
                 readItems={readItems}
                 toggleRead={toggleRead}
               />
@@ -137,12 +135,14 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
 
           {filteredThisWeek.length > 0 && (
             <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              <h2 className="mb-3 font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
                 Earlier this week
               </h2>
               <CategoryGroups
                 items={filteredThisWeek}
                 level={level}
+                accentColor={accentColor}
+                animKey={animKey}
                 readItems={readItems}
                 toggleRead={toggleRead}
               />

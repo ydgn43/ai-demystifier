@@ -1,56 +1,41 @@
 import Link from "next/link";
 
+const NAV_LINKS = [
+  { href: "/", label: "News" },
+  { href: "/timeline", label: "Timeline" },
+  { href: "/learn", label: "Learn" },
+  { href: "/about", label: "About" },
+];
+
 export function Header() {
   return (
-    <header className="border-b border-slate-200 dark:border-slate-800">
-      <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-          AI News Digest
+    <header className="sticky top-0 z-30 border-b border-hairline bg-bg">
+      <div className="mx-auto flex w-full max-w-[700px] flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+        <Link href="/" className="font-mono text-[13px] font-semibold tracking-[0.04em] text-ink">
+          AI DIGEST
         </Link>
 
-        <div className="flex items-center gap-4">
-          <form action="/search" method="get" className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-4">
+          <nav className="flex items-center gap-4">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="font-mono text-[11px] font-medium tracking-[0.05em] text-muted uppercase hover:text-ink"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <form action="/search" method="get" className="flex items-center">
             <input
               type="search"
               name="q"
-              placeholder="Search past articles..."
-              className="w-40 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-white sm:w-56"
+              placeholder="Search…"
+              className="w-28 border border-hairline bg-card px-2.5 py-1.5 font-mono text-[11px] text-ink placeholder:text-muted focus:outline-none sm:w-40"
             />
-            <button
-              type="submit"
-              className="rounded-full border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-400 dark:border-slate-700 dark:text-slate-400"
-            >
-              Search
-            </button>
           </form>
-
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            News
-          </Link>
-
-          <Link
-            href="/timeline"
-            className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Timeline
-          </Link>
-
-          <Link
-            href="/learn"
-            className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Learn
-          </Link>
-
-          <Link
-            href="/about"
-            className="text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            About
-          </Link>
         </div>
       </div>
     </header>

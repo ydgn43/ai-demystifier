@@ -152,6 +152,29 @@ visual plus the read-tracking feature on the homepage too.
 - [x] Timeline now has an actual visual timeline: a continuous vertical rail (`border-l-2`) down the page with a circular node per date group, instead of plain stacked date headers — the thing that makes it visually distinct from the homepage feed at a glance
 - [x] Read/unread tracking (checkmark, dimming, "X of Y read") brought to the homepage `Feed.tsx` via the same shared `FeedCard` props and `useReadProgress` hook — read state is shared across homepage and Timeline since both use the same storage key/item IDs
 
+### Phase 2.9 — Design system adoption from Figma Make mockup (same day)
+
+User supplied a `mockup/` folder (Figma Make output) with a fully worked
+design brief and reference implementation: typography inversion (mono for
+machine/technical scaffolding — metadata, categories, timestamps, buttons;
+sans for human-readable content — headlines, summaries), a "cool paper"
+palette with exactly one structural accent color tied to the casual/
+developer toggle, no colorful category badges, hairline borders instead of
+shadows. Asked to implement it "where suitable." Four scope questions
+resolved before starting: apply site-wide (not just the 3 screens the brief
+specs) — yes; extend the pipeline for a real rewritten headline — yes;
+extend it for a "why this matters" blurb too — yes; wire up the footer's
+email capture to a real backend — no, visual only.
+
+**Pipeline** (`PROMPT_VERSION` bumped to `v4`, full corpus reprocessed):
+- [x] `headline` — a genuinely rewritten plain-English headline, distinct from the original paper/repo title (which now shows as a secondary mono line on the detail page). This was a real content-model gap, not just styling — the design's mono/sans split specifically depends on "technical title" and "rewritten headline" being two different things, which nothing in the pipeline produced before.
+- [x] `why_it_matters_casual` / `why_it_matters_developer` — one-sentence, level-appropriate significance blurb for the detail page's callout, bundled into the same LLM call (no extra API cost)
+- [x] New migration `005_headline_and_why_it_matters.sql` (three columns on `item_metadata`); `FeedItem`/`ItemDetail` schemas and every route's SQL (`/feed`, `/search`, `/timeline`, `/items/{id}`) updated; search's full-text index now includes `headline` too
+
+**Frontend** — fonts swapped to IBM Plex Mono/Sans (`next/font/google`), new theme tokens (`bg`/`card`/`ink`/`muted`/`hairline`/`accent-casual`/`accent-dev`) replacing the old slate/violet/blue/emerald/amber palette, dark mode dropped entirely (the mockup never addressed one — treated as a deliberate, committed light-only "paper" aesthetic rather than inventing an unspecified dark variant). New shared components: `LevelToggle` (sliding-fill accent-colored segmented control, replacing the old pill toggle), `JargonTooltip` (interactive hover/tap tooltip replacing the native `<abbr title>`, with tap-outside-to-dismiss), `EmptyState`, `FeedSkeleton`. `FeedCard` and `ArticleView` fully rebuilt around the new anatomy (category as a plain hairline chip, not a colored badge; headline as the real heading; crossfade animation on toggle via a bumped `animKey`). Applied consistently across every page (Feed, Timeline, Search, Learn, About, item detail), not just the 3 screens the original brief specified. Visual-only footer email capture added.
+
+- [x] Reprocessed the full corpus (135 items) under `v4` in the background while doing the frontend work, so headline/why-it-matters exist everywhere the redesign expects them.
+
 ## Known follow-ups
 
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.
@@ -159,3 +182,4 @@ visual plus the read-tracking feature on the homepage too.
 - [x] ~~GitHub ingestion had no AI/ML topical filter~~ — fixed (2026-08-03): the fetcher previously did `created:>yesterday, sort:stars` with no subject-matter filter at all, so generic high-star repos (a game booster, a checkers game, a movie app) were ranking into the feed. Now runs one search per AI/ML topic (`machine-learning`, `llm`, `nlp`, `computer-vision`, etc.) and merges/dedupes the results. Stale non-AI rows already in the DB were cleared via `backend/migrations/004_clear_stale_github_items.sql`.
 - [ ] GitHub API requests per ingest run went from ~26 (1 search + 25 READMEs) to ~35 (10 topic searches + up to 25 READMEs). Unauthenticated GitHub API is capped at 60 req/hr, which is now genuinely tight — `GITHUB_TOKEN` (already an optional env var) is effectively required, not just a nice-to-have.
 - [ ] Local-Ollama-vs-Phase-4-deploy tension (see Phase 4) is unresolved — needs a decision before deploy can proceed.
+- [ ] `npm run build` hit a JS heap OOM twice in a row during the Phase 2.9 work, resolved by stopping the Next dev server first and retrying — this machine was under genuine memory pressure (4GB free of 31.7GB) from the Ollama reprocessing job plus normal desktop usage, not a code issue. Worth remembering as a real constraint of doing local builds while `/summarize/run` batches are active on this hardware.

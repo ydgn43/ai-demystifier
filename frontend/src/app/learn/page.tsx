@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function LearnIndexPage() {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-10">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Learn</h1>
-      <p className="mt-1 text-slate-500 dark:text-slate-400">
+    <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
+      <h1 className="mt-8 font-sans text-2xl font-semibold text-ink">Learn</h1>
+      <p className="mt-1 font-sans text-sm text-muted">
         A short, beginner-to-advanced path through the concepts that show up most in the daily
         digest.
       </p>

@@ -12,7 +12,8 @@ _SELECT_ITEM_SQL = """
         ri.id, ri.source, ri.url, ri.title, ri.published_at,
         s1.body AS level1, s2.body AS level2,
         a1.body AS article1, a2.body AS article2,
-        im.category, im.tags, im.jargon_terms
+        im.category, im.tags, im.jargon_terms, im.headline,
+        im.why_it_matters_casual, im.why_it_matters_developer
     FROM raw_items ri
     JOIN summaries s1 ON s1.item_id = ri.id AND s1.level = 1 AND s1.prompt_version = $2
     JOIN summaries s2 ON s2.item_id = ri.id AND s2.level = 2 AND s2.prompt_version = $2

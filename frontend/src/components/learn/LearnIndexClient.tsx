@@ -12,18 +12,15 @@ export function LearnIndexClient({ articles }: { articles: LearnArticle[] }) {
 
   return (
     <div>
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between text-sm font-medium text-slate-600 dark:text-slate-400">
-          <span>Your progress</span>
+      <div className="border border-hairline bg-card p-4">
+        <div className="flex items-center justify-between font-mono text-[11px] tracking-wide text-muted">
+          <span>YOUR PROGRESS</span>
           <span>
             {doneCount} of {articles.length} completed
           </span>
         </div>
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-          <div
-            className="h-full rounded-full bg-slate-900 transition-all duration-300 dark:bg-white"
-            style={{ width: `${pct}%` }}
-          />
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-hairline">
+          <div className="h-full bg-ink transition-all duration-300" style={{ width: `${pct}%` }} />
         </div>
       </div>
 
@@ -33,7 +30,7 @@ export function LearnIndexClient({ articles }: { articles: LearnArticle[] }) {
           if (levelArticles.length === 0) return null;
           return (
             <div key={level}>
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+              <h2 className="font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
                 {LEVEL_LABELS[level]}
               </h2>
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -43,24 +40,22 @@ export function LearnIndexClient({ articles }: { articles: LearnArticle[] }) {
                     <Link
                       key={article.slug}
                       href={`/learn/${article.slug}`}
-                      className="group relative flex flex-col rounded-xl border border-slate-200 p-4 transition-colors hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-600"
+                      className="group relative flex flex-col border border-hairline bg-card p-4 transition-colors hover:border-ink"
                     >
                       {isDone && (
                         <span
                           aria-label="Completed"
-                          className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs text-white"
+                          className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] text-white"
                         >
                           ✓
                         </span>
                       )}
                       <span className="text-2xl">{article.icon}</span>
-                      <span className="mt-2 font-semibold text-slate-900 group-hover:underline dark:text-white">
+                      <span className="mt-2 font-sans font-semibold text-ink group-hover:underline">
                         {article.title}
                       </span>
-                      <span className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        {article.teaser}
-                      </span>
-                      <span className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+                      <span className="mt-1 font-sans text-sm text-muted">{article.teaser}</span>
+                      <span className="mt-3 font-mono text-[10px] tracking-wide text-muted">
                         {readingTimeMinutes(article.body)} min read
                       </span>
                     </Link>

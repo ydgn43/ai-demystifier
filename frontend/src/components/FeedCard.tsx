@@ -1,97 +1,74 @@
 import Link from "next/link";
-import type { FeedItem } from "@/lib/types";
+import type { FeedItem, Level } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 import { formatDate } from "@/lib/date";
-
-const CATEGORY_STYLES: Record<string, string> = {
-  Models: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300",
-  Research: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300",
-  "Developer Tools": "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  "Industry News": "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
-};
 
 export function FeedCard({
   item,
   level,
+  accentColor,
+  animKey,
   isRead,
   onToggleRead,
 }: {
   item: FeedItem;
-  level: "casual" | "developer";
-  // Read/unread is opt-in — only the Timeline wires these up. Feed/Search
-  // render exactly as before when they're omitted.
+  level: Level;
+  accentColor: string;
+  // Bumped by the parent on every toggle flip so the summary's fade-in
+  // remounts and replays, instead of just silently swapping text.
+  animKey: number;
+  // Read/unread is opt-in — only Timeline/Feed wire these up.
   isRead?: boolean;
   onToggleRead?: () => void;
 }) {
   const body = level === "developer" ? item.level2 : item.level1;
   const date = formatDate(item.published_at);
+  const meta = [item.source, date].filter(Boolean).join(" · ");
 
   return (
-    <li className={`py-6 ${isRead ? "opacity-60" : ""}`}>
-      <div className="flex items-center gap-2 text-xs">
+    <li className={`border border-hairline bg-card p-4 sm:px-5 sm:py-[15px] ${isRead ? "opacity-60" : ""}`}>
+      <div className="mb-[7px] flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-muted">
         {onToggleRead && (
           <button
             type="button"
             onClick={onToggleRead}
             aria-label={isRead ? "Mark as unread" : "Mark as read"}
-            className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] leading-none transition-colors ${
-              isRead
-                ? "border-emerald-500 bg-emerald-500 text-white"
-                : "border-slate-300 text-transparent hover:border-slate-400 dark:border-slate-600"
-            }`}
+            className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-hairline text-[9px] leading-none text-white"
+            style={isRead ? { background: accentColor, borderColor: accentColor } : undefined}
           >
-            ✓
+            {isRead ? "✓" : ""}
           </button>
         )}
-        <span
-          className={`rounded-full px-2 py-0.5 font-medium ${
-            CATEGORY_STYLES[item.category] ??
-            "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-          }`}
-        >
-          {item.category}
+        <span className="rounded-[2px] border border-hairline px-[5px] py-[1px] text-[9px] tracking-[0.07em] text-muted">
+          {item.category.toUpperCase()}
         </span>
-        <span className="text-slate-400 dark:text-slate-600">{item.source}</span>
-        {date && <span className="text-slate-400 dark:text-slate-600">&middot; {date}</span>}
+        <span>{meta}</span>
       </div>
 
-      <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+      <h2 className="mb-2 font-sans text-lg font-semibold leading-[1.3] text-ink">
         <Link href={`/item/${item.id}`} className="hover:underline">
-          {item.title}
+          {item.headline}
         </Link>
       </h2>
 
-      <p className="mt-2 leading-relaxed text-slate-700 dark:text-slate-300">
-        {level === "developer" ? renderWithGlossary(body) : body}
+      <p
+        key={`${item.id}-${animKey}`}
+        className="summary-fade mb-3 font-sans text-sm leading-[1.6] text-ink"
+      >
+        {level === "developer" ? renderWithGlossary(body, accentColor) : body}
       </p>
 
-      {item.tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {item.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="mt-3 flex items-center gap-4 text-sm">
-        <Link
-          href={`/item/${item.id}`}
-          className="font-medium text-slate-900 underline decoration-slate-300 underline-offset-4 hover:decoration-slate-900 dark:text-white dark:decoration-slate-700 dark:hover:decoration-white"
-        >
+      <div className="flex flex-wrap items-center gap-4 font-mono text-[11px] font-medium tracking-[0.06em]">
+        <Link href={`/item/${item.id}`} className="uppercase hover:underline" style={{ color: accentColor }}>
           Read more &rarr;
         </Link>
         <a
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          className="uppercase text-muted hover:underline"
         >
-          View original source
+          View source &rarr;
         </a>
       </div>
     </li>

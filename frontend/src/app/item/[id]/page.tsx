@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getItem } from "@/lib/api";
 import { ArticleView } from "@/components/ArticleView";
@@ -26,10 +25,10 @@ export async function generateMetadata({
 
   const { item } = result;
   return {
-    title: item.title,
+    title: item.headline,
     description: item.level1,
     openGraph: {
-      title: item.title,
+      title: item.headline,
       description: item.level1,
       type: "article",
       publishedTime: item.published_at ?? undefined,
@@ -52,16 +51,9 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-10">
-      <Link
-        href="/"
-        className="mb-6 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-      >
-        &larr; Back to digest
-      </Link>
-
+    <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-6 pb-20">
       {!result.ok ? (
-        <p className="py-16 text-center text-red-600 dark:text-red-400">
+        <p className="py-16 text-center font-sans text-[15px] text-muted">
           Couldn&apos;t load this item: {result.error}
         </p>
       ) : (

@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-6 py-10">
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">About</h1>
-      <div className="mt-6 space-y-4 leading-relaxed text-slate-700 dark:text-slate-300">
+    <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
+      <h1 className="mt-8 font-sans text-2xl font-semibold text-ink">About</h1>
+      <div className="mt-6 space-y-4 font-sans leading-relaxed text-ink">
         <p>
           AI News Digest pulls new papers, models, and tools from Hugging Face&apos;s Daily
           Papers, GitHub, and arXiv every day, and turns each one into a plain-English summary —

@@ -8,6 +8,7 @@ class ItemDetail(BaseModel):
     source: str
     url: str
     title: str
+    headline: str
     category: str
     tags: list[str]
     jargon_terms: list[str]
@@ -16,3 +17,5 @@ class ItemDetail(BaseModel):
     level2: str
     article1: str
     article2: str
+    why_it_matters_casual: str
+    why_it_matters_developer: str

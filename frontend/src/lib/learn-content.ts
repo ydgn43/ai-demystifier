@@ -8,14 +8,10 @@ export const LEVEL_LABELS: Record<LearnLevel, string> = {
   advanced: "Advanced",
 };
 
-// A green -> amber -> rose difficulty progression, distinct from the
-// per-category badge colors used elsewhere (Models/Research/etc.) so the
-// two badge systems don't read as the same kind of label.
-export const LEVEL_STYLES: Record<LearnLevel, string> = {
-  beginner: "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300",
-  intermediate: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
-  advanced: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
-};
+// Plain hairline chip, no color differentiation by level — color is
+// reserved for the casual/developer accent elsewhere in the design.
+export const LEVEL_BADGE_CLASS =
+  "rounded-[2px] border border-hairline px-1.5 py-0.5 text-[10px] tracking-[0.08em] text-ink";
 
 export type LearnArticle = {
   slug: string;

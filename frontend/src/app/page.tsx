@@ -1,5 +1,6 @@
 import { getFeed } from "@/lib/api";
 import { Feed } from "@/components/Feed";
+import { EmptyState } from "@/components/EmptyState";
 
 // The feed changes with every ingest run, not every deploy — always fetch
 // fresh rather than serving a build-time snapshot.
@@ -9,19 +10,14 @@ export default async function Home() {
   const result = await getFeed();
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-10">
-      <p className="mb-8 text-slate-500 dark:text-slate-400">
-        The day&apos;s AI papers, models, and tools — demystified.
-      </p>
-
+    <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
       {!result.ok ? (
-        <p className="py-16 text-center text-red-600 dark:text-red-400">
-          Couldn&apos;t load today&apos;s digest: {result.error}
-        </p>
+        <EmptyState message="Couldn't load today's digest." hint={result.error} />
       ) : result.today.length === 0 && result.this_week.length === 0 ? (
-        <p className="py-16 text-center text-slate-500 dark:text-slate-400">
-          No items yet — check back after the next digest run.
-        </p>
+        <EmptyState
+          message="Today's digest hasn't landed yet."
+          hint="Check back after the next run."
+        />
       ) : (
         <Feed today={result.today} thisWeek={result.this_week} />
       )}
