@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ItemDetail, Level } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 import { formatDate } from "@/lib/date";
 import { accentColorFor } from "@/lib/theme";
 import { LevelToggle } from "@/components/LevelToggle";
+import { useReadProgress } from "@/lib/read-progress";
 
 export function ArticleView({ item }: { item: ItemDetail }) {
   const [level, setLevel] = useState<Level>("casual");
   const [animKey, setAnimKey] = useState(0);
   const accentColor = accentColorFor(level);
+  const { markRead } = useReadProgress();
+
+  // Visiting the article is what marks it read — no manual toggle.
+  useEffect(() => {
+    markRead(item.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.id]);
 
   const handleLevelChange = (l: Level) => {
     setLevel(l);

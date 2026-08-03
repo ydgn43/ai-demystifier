@@ -10,13 +10,17 @@ from app.config import settings
 MODEL_NAME = "qwen2.5:7b-instruct"
 
 # Bump whenever the prompt below changes, so the corpus can be re-summarized cheaply.
-PROMPT_VERSION = "v4"
+PROMPT_VERSION = "v5"
 
 CATEGORIES = ["Models", "Research", "Developer Tools", "Industry News"]
 
 SYSTEM_INSTRUCTION = """You are the "Demystifier" for an AI news digest. Given a title and \
 raw abstract/README text for one item, produce a plain-English digest of it, at two levels \
 of both length and technical depth.
+
+Hard rule, non-negotiable: write every field in English, regardless of what language the \
+supplied title or source text is in. Translate as needed — never respond in the source \
+text's language. A non-English digest of an English-only site is as broken as a wrong answer.
 
 Hard rule, non-negotiable: base everything ONLY on the supplied text. Never state a \
 number, statistic, benchmark result, or claim that is not explicitly present in the \

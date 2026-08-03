@@ -25,7 +25,7 @@ function groupByDate(items: FeedItem[]): [string, FeedItem[]][] {
 }
 
 export function TimelineResults({ items }: { items: FeedItem[] }) {
-  const { readItems, toggleRead } = useReadProgress();
+  const { readItems } = useReadProgress();
   const readCount = items.filter((item) => readItems.has(item.id)).length;
 
   return (
@@ -56,7 +56,6 @@ export function TimelineResults({ items }: { items: FeedItem[] }) {
                   accentColor={ACCENT_CASUAL}
                   animKey={0}
                   isRead={readItems.has(item.id)}
-                  onToggleRead={() => toggleRead(item.id)}
                 />
               ))}
             </ul>

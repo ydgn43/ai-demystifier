@@ -175,6 +175,11 @@ email capture to a real backend — no, visual only.
 
 - [x] Reprocessed the full corpus (135 items) under `v4` in the background while doing the frontend work, so headline/why-it-matters exist everywhere the redesign expects them.
 
+### Follow-up (same day): auto-mark-as-read, English-only output
+
+- [x] Read/unread is no longer a manual toggle — visiting an item's detail page (`ArticleView`) marks it read automatically via a `useEffect` on mount. `useReadProgress()` now exposes `markRead(id)` (one-directional, idempotent) instead of `toggleRead`; the checkbox button and `onToggleRead` prop are gone from `FeedCard` entirely — `isRead` still drives the dimmed styling, just set upstream instead of by a click on the card.
+- [x] Some items were rendering in Chinese instead of English — the local model (multilingual) was following the source text's language rather than always translating. Root cause: nothing in the prompt said to always respond in English. Added an explicit hard rule to `SYSTEM_INSTRUCTION`, bumped `PROMPT_VERSION` to `v5`, verified directly against the specific item that had been in Chinese before reprocessing the full corpus.
+
 ## Known follow-ups
 
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.

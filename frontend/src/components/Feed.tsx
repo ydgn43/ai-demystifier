@@ -24,14 +24,12 @@ function CategoryGroups({
   accentColor,
   animKey,
   readItems,
-  toggleRead,
 }: {
   items: FeedItem[];
   level: Level;
   accentColor: string;
   animKey: number;
   readItems: Set<number>;
-  toggleRead: (id: number) => void;
 }) {
   return (
     <div className="space-y-7">
@@ -49,7 +47,6 @@ function CategoryGroups({
                 accentColor={accentColor}
                 animKey={animKey}
                 isRead={readItems.has(item.id)}
-                onToggleRead={() => toggleRead(item.id)}
               />
             ))}
           </ul>
@@ -63,7 +60,7 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
   const [level, setLevel] = useState<Level>("casual");
   const [animKey, setAnimKey] = useState(0);
   const [category, setCategory] = useState<CategoryFilter>("All");
-  const { readItems, toggleRead } = useReadProgress();
+  const { readItems } = useReadProgress();
   const accentColor = accentColorFor(level);
 
   const handleLevelChange = (l: Level) => {
@@ -128,7 +125,6 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
                 accentColor={accentColor}
                 animKey={animKey}
                 readItems={readItems}
-                toggleRead={toggleRead}
               />
             )}
           </section>
@@ -144,7 +140,6 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
                 accentColor={accentColor}
                 animKey={animKey}
                 readItems={readItems}
-                toggleRead={toggleRead}
               />
             </section>
           )}

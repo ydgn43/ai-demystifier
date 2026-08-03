@@ -9,7 +9,6 @@ export function FeedCard({
   accentColor,
   animKey,
   isRead,
-  onToggleRead,
 }: {
   item: FeedItem;
   level: Level;
@@ -17,9 +16,9 @@ export function FeedCard({
   // Bumped by the parent on every toggle flip so the summary's fade-in
   // remounts and replays, instead of just silently swapping text.
   animKey: number;
-  // Read/unread is opt-in — only Timeline/Feed wire these up.
+  // Read/unread is opt-in — only Timeline/Feed wire this up. Set
+  // automatically when the item's detail page is visited, not toggled here.
   isRead?: boolean;
-  onToggleRead?: () => void;
 }) {
   const body = level === "developer" ? item.level2 : item.level1;
   const date = formatDate(item.published_at);
@@ -28,17 +27,6 @@ export function FeedCard({
   return (
     <li className={`border border-hairline bg-card p-4 sm:px-5 sm:py-[15px] ${isRead ? "opacity-60" : ""}`}>
       <div className="mb-[7px] flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-muted">
-        {onToggleRead && (
-          <button
-            type="button"
-            onClick={onToggleRead}
-            aria-label={isRead ? "Mark as unread" : "Mark as read"}
-            className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-hairline text-[9px] leading-none text-white"
-            style={isRead ? { background: accentColor, borderColor: accentColor } : undefined}
-          >
-            {isRead ? "✓" : ""}
-          </button>
-        )}
         <span className="rounded-[2px] border border-hairline px-[5px] py-[1px] text-[9px] tracking-[0.07em] text-muted">
           {item.category.toUpperCase()}
         </span>
