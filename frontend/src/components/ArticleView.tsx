@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ItemDetail } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
+import { formatDate } from "@/lib/date";
 
 const LEVELS = ["casual", "developer"] as const;
 type Level = (typeof LEVELS)[number];
@@ -18,6 +19,7 @@ export function ArticleView({ item }: { item: ItemDetail }) {
   const [level, setLevel] = useState<Level>("casual");
   const article = level === "developer" ? item.article2 : item.article1;
   const paragraphs = article.split(/\n+/).filter((p) => p.trim().length > 0);
+  const date = formatDate(item.published_at);
 
   return (
     <article>
@@ -31,6 +33,7 @@ export function ArticleView({ item }: { item: ItemDetail }) {
           {item.category}
         </span>
         <span className="text-slate-400 dark:text-slate-600">{item.source}</span>
+        {date && <span className="text-slate-400 dark:text-slate-600">&middot; {date}</span>}
       </div>
 
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">

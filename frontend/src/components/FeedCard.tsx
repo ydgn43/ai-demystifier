@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { FeedItem } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
+import { formatDate } from "@/lib/date";
 
 const CATEGORY_STYLES: Record<string, string> = {
   Models: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300",
@@ -17,6 +18,7 @@ export function FeedCard({
   level: "casual" | "developer";
 }) {
   const body = level === "developer" ? item.level2 : item.level1;
+  const date = formatDate(item.published_at);
 
   return (
     <li className="py-6">
@@ -30,6 +32,7 @@ export function FeedCard({
           {item.category}
         </span>
         <span className="text-slate-400 dark:text-slate-600">{item.source}</span>
+        {date && <span className="text-slate-400 dark:text-slate-600">&middot; {date}</span>}
       </div>
 
       <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
