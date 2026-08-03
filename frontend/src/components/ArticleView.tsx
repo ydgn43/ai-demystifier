@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/date";
 import { accentColorFor } from "@/lib/theme";
 import { LevelToggle } from "@/components/LevelToggle";
 import { useReadProgress } from "@/lib/read-progress";
+import { BookmarkButton } from "@/components/BookmarkButton";
 
 export function ArticleView({ item }: { item: ItemDetail }) {
   const [level, setLevel] = useState<Level>("casual");
@@ -36,12 +37,15 @@ export function ArticleView({ item }: { item: ItemDetail }) {
   return (
     <div>
       <div className="sticky top-14 z-20 flex items-center justify-between border-b border-hairline bg-bg py-3">
-        <Link
-          href="/"
-          className="font-mono text-[11px] font-medium tracking-[0.06em] text-muted uppercase hover:text-ink"
-        >
-          &larr; Back
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="font-mono text-[11px] font-medium tracking-[0.06em] text-muted uppercase hover:text-ink"
+          >
+            &larr; Back
+          </Link>
+          <BookmarkButton itemId={item.id} />
+        </div>
         <LevelToggle level={level} onChange={handleLevelChange} accentColor={accentColor} />
       </div>
 

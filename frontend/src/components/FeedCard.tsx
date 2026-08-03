@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { FeedItem, Level } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 import { formatDate } from "@/lib/date";
+import { BookmarkButton } from "@/components/BookmarkButton";
 
 export function FeedCard({
   item,
@@ -58,6 +59,7 @@ export function FeedCard({
         >
           View source &rarr;
         </a>
+        <BookmarkButton itemId={item.id} className="ml-auto" />
       </div>
     </li>
   );

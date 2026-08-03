@@ -197,6 +197,18 @@ Figma brief.
 - [x] Fixed five spots that hardcoded `text-white` on a `bg-ink` surface (category-filter pills, the Learn "mark as read" button/checkmark badge, the footer subscribe button) — `ink` itself flips between near-black and near-white across themes, so these needed `text-bg` instead to stay legible in both. Left `text-white`-on-accent-color spots (the toggle's active pill, "View source" button) alone since both accent colors were chosen to keep working with white text in either theme.
 - Not visually screenshot-tested — no browser tool available in this session. Verified via a clean `npm run build`, and by inspecting the compiled dev CSS output directly to confirm the `.dark { ... }` override block and the inlined `beforeInteractive` script are both present as expected.
 
+### Follow-up: bookmarking
+
+Client-side only, same as read/learn progress and theme — no accounts exist,
+so "save for later" lives in `localStorage`, not a new table.
+
+- [x] `GET /items?ids=1,2,3` (new, in `item.py` alongside the existing `GET /items/{id}`) — batch-fetches the `FeedItem` shape for a list of ids, silently skips ids that don't resolve (deleted/never existed). `score` is unset here (`0.0`), same treatment as `/timeline` — this view isn't ranked either.
+- [x] `bookmarks.ts` — `useBookmarks()` hook, the same `useSyncExternalStore`/`localStorage` pattern as `read-progress.ts`/`learn-progress.ts`/`theme-mode.ts`. Unlike read-tracking, bookmarking stays an explicit action (never automatic).
+- [x] `BookmarkButton.tsx` — self-contained client component (reads `useBookmarks()` itself rather than taking `isBookmarked`/`onToggle` props), so it drops straight into `FeedCard` and works everywhere `FeedCard` is rendered — including from server components like `/search` and the Learn "related right now" section — without those pages needing to become client components or thread bookmark state through props.
+- [x] `/bookmarks` page — the one page in this app that can't be a server component: the id list only exists in this browser's `localStorage`, so there's nothing to fetch server-side. It's a client component that resolves ids via a new same-origin route handler (`app/api/items/route.ts`), which is the thin proxy to the backend — `BACKEND_API_URL` stays server-only this way, consistent with every other page, and it sidesteps the backend having no CORS setup for direct browser calls. Sorts results back into save-order (most recent first) client-side, since the backend has no reason to know it.
+- [x] Header nav gained a "Bookmarks" link. Not added to `sitemap.ts`, same reasoning as `/search`: no canonical server-renderable content, purely per-browser.
+- Not visually tested in a browser (no browser tool available this session) — verified via a clean `npm run build` and curling the full chain (`backend /items?ids=` → frontend `/api/items` proxy → expected JSON) directly.
+
 ## Known follow-ups
 
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.
