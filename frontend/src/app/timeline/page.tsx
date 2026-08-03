@@ -16,17 +16,21 @@ export const dynamic = "force-dynamic";
 const CATEGORIES: Category[] = ["Models", "Research", "Developer Tools", "Industry News"];
 
 function groupByDate(items: FeedItem[]): [string, FeedItem[]][] {
-  const groups: [string, FeedItem[]][] = [];
+  // Items are ordered by fetched_at (ingest time), not published_at, so
+  // two items sharing a published date can be non-adjacent in the list —
+  // group by a map instead of merging only consecutive entries, otherwise
+  // the same date can appear as two separate groups (duplicate React keys).
+  const groups = new Map<string, FeedItem[]>();
   for (const item of items) {
     const key = formatDate(item.published_at) ?? "Unknown date";
-    const last = groups[groups.length - 1];
-    if (last && last[0] === key) {
-      last[1].push(item);
+    const existing = groups.get(key);
+    if (existing) {
+      existing.push(item);
     } else {
-      groups.push([key, [item]]);
+      groups.set(key, [item]);
     }
   }
-  return groups;
+  return [...groups.entries()];
 }
 
 function filterHref(category: string | undefined): string {
