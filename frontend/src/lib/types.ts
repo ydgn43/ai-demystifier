@@ -14,6 +14,7 @@ export type FeedItem = {
   jargon_terms: string[];
   published_at: string | null;
   score: number;
+  metrics: Record<string, unknown>;
 };
 
 export type FeedResponse = {
@@ -36,6 +37,7 @@ export type ItemDetail = {
   tags: string[];
   jargon_terms: string[];
   published_at: string | null;
+  metrics: Record<string, unknown>;
   level1: string;
   level2: string;
   article1: string;

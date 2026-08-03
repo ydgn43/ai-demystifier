@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -16,6 +17,10 @@ class FeedItem(BaseModel):
     jargon_terms: list[str]
     published_at: datetime | None
     score: float
+    # Source-native popularity signal — {"stars": N, "language": ...} for
+    # github, {"upvotes": N} for huggingface, {} for arxiv (no such signal).
+    # Same raw shape ranking.py already scores on, just surfaced to the API.
+    metrics: dict[str, Any] = {}
 
 
 class FeedResponse(BaseModel):

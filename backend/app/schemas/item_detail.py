@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -13,6 +14,7 @@ class ItemDetail(BaseModel):
     tags: list[str]
     jargon_terms: list[str]
     published_at: datetime | None
+    metrics: dict[str, Any] = {}
     level1: str
     level2: str
     article1: str

@@ -209,6 +209,20 @@ so "save for later" lives in `localStorage`, not a new table.
 - [x] Header nav gained a "Bookmarks" link. Not added to `sitemap.ts`, same reasoning as `/search`: no canonical server-renderable content, purely per-browser.
 - Not visually tested in a browser (no browser tool available this session) — verified via a clean `npm run build` and curling the full chain (`backend /items?ids=` → frontend `/api/items` proxy → expected JSON) directly.
 
+### Follow-up: surface source popularity metrics (stars / upvotes)
+
+The data already existed — `raw_items.metrics_json` (`{"stars": N, "language": ...}`
+for github, `{"upvotes": N}` for huggingface, `{}` for arxiv) has been captured
+by the fetchers and used by `ranking.py`'s scoring since Phase 1. It just
+wasn't exposed past the ranking step. This is purely a surfacing change, no
+new data collection.
+
+- [x] `FeedItem`/`ItemDetail` gained a `metrics: dict[str, Any] = {}` field; every SQL query building either shape (`/feed`, `/search`, `/timeline`, `/items`, `/items/{id}`) now selects `ri.metrics_json AS metrics` — same raw dict ranking.py already reads, just aliased into the response shape.
+- [x] `frontend/src/lib/metrics.ts` — `formatMetric(source, metrics)`, source-aware (★ stars for github, ▲ upvotes for huggingface, nothing for arxiv), compact-formats large counts (`1.2k`). Rendered in `FeedCard` and `ArticleView`'s existing meta line (`source · date · metric`), no new UI element needed.
+- Verified end-to-end: curled all five affected backend endpoints directly, then confirmed real star/upvote values render in the actual homepage HTML through the Next dev server.
+
+**Gotcha hit while testing** (worth remembering, not a code bug): `uvicorn --reload` on Windows leaves orphaned worker subprocesses behind when you kill the reloader PID directly (`Stop-Process` on the parent doesn't take the multiprocessing-spawned child with it) — one of those zombies kept answering on port 8000 with pre-edit code for a while, which looked exactly like "the backend isn't picking up schema changes." Confirmed via `/openapi.json` (shows the live process's actual Pydantic schema) and `Get-CimInstance Win32_Process` to find the orphan's command line. Fix: enumerate every `python.exe` process and kill all of them before starting one clean instance, rather than trusting a single `Stop-Process` on the PID `Get-NetTCPConnection` reports (that can be stale immediately after a kill).
+
 ## Known follow-ups
 
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.

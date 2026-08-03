@@ -15,6 +15,7 @@ _MAX_RESULTS = 25
 _SEARCH_SQL = """
     SELECT
         ri.id, ri.source, ri.url, ri.title, ri.published_at,
+        ri.metrics_json AS metrics,
         s1.body AS level1, s2.body AS level2,
         im.category, im.tags, im.jargon_terms, im.headline,
         ts_rank(

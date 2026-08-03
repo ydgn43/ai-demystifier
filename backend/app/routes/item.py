@@ -14,6 +14,7 @@ router = APIRouter()
 _SELECT_ITEMS_BY_IDS_SQL = """
     SELECT
         ri.id, ri.source, ri.url, ri.title, ri.published_at,
+        ri.metrics_json AS metrics,
         s1.body AS level1, s2.body AS level2,
         im.category, im.tags, im.jargon_terms, im.headline
     FROM raw_items ri
@@ -26,6 +27,7 @@ _SELECT_ITEMS_BY_IDS_SQL = """
 _SELECT_ITEM_SQL = """
     SELECT
         ri.id, ri.source, ri.url, ri.title, ri.published_at,
+        ri.metrics_json AS metrics,
         s1.body AS level1, s2.body AS level2,
         a1.body AS article1, a2.body AS article2,
         im.category, im.tags, im.jargon_terms, im.headline,

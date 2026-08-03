@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { FeedItem, Level } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 import { formatDate } from "@/lib/date";
+import { formatMetric } from "@/lib/metrics";
 import { BookmarkButton } from "@/components/BookmarkButton";
 
 export function FeedCard({
@@ -23,7 +24,8 @@ export function FeedCard({
 }) {
   const body = level === "developer" ? item.level2 : item.level1;
   const date = formatDate(item.published_at);
-  const meta = [item.source, date].filter(Boolean).join(" · ");
+  const metric = formatMetric(item.source, item.metrics);
+  const meta = [item.source, date, metric].filter(Boolean).join(" · ");
 
   return (
     <li className={`border border-hairline bg-card p-4 sm:px-5 sm:py-[15px] ${isRead ? "opacity-60" : ""}`}>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ItemDetail, Level } from "@/lib/types";
 import { renderWithGlossary } from "@/lib/glossary";
 import { formatDate } from "@/lib/date";
+import { formatMetric } from "@/lib/metrics";
 import { accentColorFor } from "@/lib/theme";
 import { LevelToggle } from "@/components/LevelToggle";
 import { useReadProgress } from "@/lib/read-progress";
@@ -32,7 +33,8 @@ export function ArticleView({ item }: { item: ItemDetail }) {
   const whyItMatters =
     level === "developer" ? item.why_it_matters_developer : item.why_it_matters_casual;
   const date = formatDate(item.published_at);
-  const meta = [item.source, date].filter(Boolean).join(" · ");
+  const metric = formatMetric(item.source, item.metrics);
+  const meta = [item.source, date, metric].filter(Boolean).join(" · ");
 
   return (
     <div>
