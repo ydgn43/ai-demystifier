@@ -2,7 +2,7 @@
 
 import { FeedCard } from "@/components/FeedCard";
 import { formatDate } from "@/lib/date";
-import { useTimelineProgress } from "@/lib/timeline-progress";
+import { useReadProgress } from "@/lib/read-progress";
 import type { FeedItem } from "@/lib/types";
 
 function groupByDate(items: FeedItem[]): [string, FeedItem[]][] {
@@ -24,7 +24,7 @@ function groupByDate(items: FeedItem[]): [string, FeedItem[]][] {
 }
 
 export function TimelineResults({ items }: { items: FeedItem[] }) {
-  const { readItems, toggleRead } = useTimelineProgress();
+  const { readItems, toggleRead } = useReadProgress();
   const readCount = items.filter((item) => readItems.has(item.id)).length;
 
   return (
@@ -36,11 +36,15 @@ export function TimelineResults({ items }: { items: FeedItem[] }) {
         </span>
       </div>
 
-      <div className="mt-4 space-y-8">
+      {/* The vertical rail is the actual "timeline" — a continuous line
+          down the page with a node per date, so this reads as visually
+          distinct from the plain list on the homepage feed. */}
+      <div className="relative mt-4 border-l-2 border-slate-200 pl-6 dark:border-slate-800">
         {groupByDate(items).map(([date, dateItems]) => (
-          <div key={date}>
+          <div key={date} className="relative pb-8 last:pb-0">
+            <span className="absolute -left-[29px] top-1 h-3 w-3 rounded-full border-2 border-white bg-slate-400 dark:border-slate-950 dark:bg-slate-600" />
             <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400">{date}</h2>
-            <ul className="mt-1 divide-y divide-slate-200 dark:divide-slate-800">
+            <ul className="mt-2 divide-y divide-slate-200 dark:divide-slate-800">
               {dateItems.map((item) => (
                 <FeedCard
                   key={item.id}

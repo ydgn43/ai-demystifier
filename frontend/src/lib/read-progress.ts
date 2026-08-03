@@ -4,11 +4,10 @@ import { useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "timeline-read-items";
 
-// Read/unread tracking for the Timeline's "catch up on what you missed"
-// view — the same inbox-style pattern RSS readers and email clients use.
-// No accounts exist, so this lives in the browser only. Same
-// useSyncExternalStore approach as learn-progress.ts, for the same reason:
-// it's React's own recommended way to sync with an external store like
+// Read/unread tracking, shared by the homepage feed and the Timeline —
+// the same inbox-style pattern RSS readers and email clients use. No
+// accounts exist, so this lives in the browser only. useSyncExternalStore
+// is React's own recommended way to sync with an external store like
 // localStorage, and avoids setState-inside-useEffect.
 const listeners = new Set<() => void>();
 
@@ -37,7 +36,7 @@ function parseRead(raw: string): Set<number> {
   }
 }
 
-export function useTimelineProgress() {
+export function useReadProgress() {
   const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const readItems = parseRead(raw);
 

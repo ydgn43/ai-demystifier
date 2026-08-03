@@ -141,6 +141,17 @@ missed."
 - [x] `FeedCard` gained optional `isRead`/`onToggleRead` props (opt-in — Feed and Search call it with neither and render exactly as before); toggling shows a checkmark and dims the card, the classic read-item treatment
 - [x] `TimelineResults.tsx` (new client component) — owns the progress hook, shows "X of Y read on this page", renders the date-grouped list with read-tracking wired in. `timeline/page.tsx` itself stays a server component for fetching/filtering/pagination, same as before
 
+### Follow-up (same day): nav clarity, an actual visual timeline, feed parity
+
+User feedback after using it: the homepage and Timeline looked similar
+enough to be mistaken for the same page, and asked for a literal timeline
+visual plus the read-tracking feature on the homepage too.
+
+- [x] Added an explicit "News" link to the header pointing at `/` — previously only the site name/logo linked home, with no nav item naming it, which was part of the "looks the same" confusion
+- [x] `timeline-progress.ts` → `read-progress.ts`, `useTimelineProgress` → `useReadProgress` — no longer Timeline-specific now that the homepage feed uses it too
+- [x] Timeline now has an actual visual timeline: a continuous vertical rail (`border-l-2`) down the page with a circular node per date group, instead of plain stacked date headers — the thing that makes it visually distinct from the homepage feed at a glance
+- [x] Read/unread tracking (checkmark, dimming, "X of Y read") brought to the homepage `Feed.tsx` via the same shared `FeedCard` props and `useReadProgress` hook — read state is shared across homepage and Timeline since both use the same storage key/item IDs
+
 ## Known follow-ups
 
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.

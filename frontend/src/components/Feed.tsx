@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Category, FeedItem } from "@/lib/types";
 import { FeedCard } from "@/components/FeedCard";
+import { useReadProgress } from "@/lib/read-progress";
 
 const CATEGORIES: Category[] = ["Models", "Research", "Developer Tools", "Industry News"];
 const CATEGORY_FILTERS = ["All", ...CATEGORIES] as const;
@@ -17,7 +18,17 @@ function groupByCategory(items: FeedItem[]): [Category, FeedItem[]][] {
   ).filter(([, group]) => group.length > 0);
 }
 
-function CategoryGroups({ items, level }: { items: FeedItem[]; level: Level }) {
+function CategoryGroups({
+  items,
+  level,
+  readItems,
+  toggleRead,
+}: {
+  items: FeedItem[];
+  level: Level;
+  readItems: Set<number>;
+  toggleRead: (id: number) => void;
+}) {
   return (
     <div className="space-y-6">
       {groupByCategory(items).map(([category, group]) => (
@@ -27,7 +38,13 @@ function CategoryGroups({ items, level }: { items: FeedItem[]; level: Level }) {
           </h3>
           <ul className="mt-1 divide-y divide-slate-200 dark:divide-slate-800">
             {group.map((item) => (
-              <FeedCard key={item.id} item={item} level={level} />
+              <FeedCard
+                key={item.id}
+                item={item}
+                level={level}
+                isRead={readItems.has(item.id)}
+                onToggleRead={() => toggleRead(item.id)}
+              />
             ))}
           </ul>
         </div>
@@ -39,6 +56,7 @@ function CategoryGroups({ items, level }: { items: FeedItem[]; level: Level }) {
 export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedItem[] }) {
   const [level, setLevel] = useState<Level>("casual");
   const [category, setCategory] = useState<CategoryFilter>("All");
+  const { readItems, toggleRead } = useReadProgress();
 
   const filteredToday = useMemo(
     () => (category === "All" ? today : today.filter((item) => item.category === category)),
@@ -48,6 +66,10 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
     () => (category === "All" ? thisWeek : thisWeek.filter((item) => item.category === category)),
     [thisWeek, category],
   );
+  const visibleCount = filteredToday.length + filteredThisWeek.length;
+  const readCount =
+    filteredToday.filter((item) => readItems.has(item.id)).length +
+    filteredThisWeek.filter((item) => readItems.has(item.id)).length;
 
   return (
     <div>
@@ -93,14 +115,23 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
         </p>
       ) : (
         <div className="space-y-10">
+          <p className="mt-4 text-right text-xs text-slate-400 dark:text-slate-500">
+            {readCount} of {visibleCount} read
+          </p>
+
           <section>
-            <h2 className="mt-6 mb-3 text-lg font-bold text-slate-900 dark:text-white">Today</h2>
+            <h2 className="mb-3 text-lg font-bold text-slate-900 dark:text-white">Today</h2>
             {filteredToday.length === 0 ? (
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 No new items yet today — here&apos;s what&apos;s been happening this week.
               </p>
             ) : (
-              <CategoryGroups items={filteredToday} level={level} />
+              <CategoryGroups
+                items={filteredToday}
+                level={level}
+                readItems={readItems}
+                toggleRead={toggleRead}
+              />
             )}
           </section>
 
@@ -109,7 +140,12 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 Earlier this week
               </h2>
-              <CategoryGroups items={filteredThisWeek} level={level} />
+              <CategoryGroups
+                items={filteredThisWeek}
+                level={level}
+                readItems={readItems}
+                toggleRead={toggleRead}
+              />
             </section>
           )}
         </div>
