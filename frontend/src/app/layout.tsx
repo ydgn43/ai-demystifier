@@ -1,8 +1,22 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import Script from "next/script";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import "./globals.css";
+
+// Runs before hydration so the correct theme applies on first paint — a
+// useEffect-based approach would flash light mode for dark-mode users.
+// Manual choice (localStorage) wins; otherwise falls back to OS preference.
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    var stored = localStorage.getItem("theme");
+    var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.classList.toggle("dark", dark);
+  } catch (e) {}
+})();
+`;
 
 // Typography is the core design idea: mono for machine/technical scaffolding
 // (metadata, categories, timestamps, buttons), sans for human-readable
@@ -35,6 +49,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-bg text-ink">
+        <Script id="theme-init" strategy="beforeInteractive">
+          {THEME_INIT_SCRIPT}
+        </Script>
         <Header />
         {children}
         <Footer />

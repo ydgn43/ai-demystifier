@@ -38,7 +38,7 @@ export default async function TimelinePage({
         <Link
           href="/timeline"
           className={`rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase transition-colors ${
-            !category ? "border-ink bg-ink text-white" : "border-hairline text-muted hover:border-ink"
+            !category ? "border-ink bg-ink text-bg" : "border-hairline text-muted hover:border-ink"
           }`}
         >
           All
@@ -49,7 +49,7 @@ export default async function TimelinePage({
             href={filterHref(cat)}
             className={`rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase transition-colors ${
               category === cat
-                ? "border-ink bg-ink text-white"
+                ? "border-ink bg-ink text-bg"
                 : "border-hairline text-muted hover:border-ink"
             }`}
           >

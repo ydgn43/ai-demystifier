@@ -179,6 +179,23 @@ email capture to a real backend — no, visual only.
 
 - [x] Read/unread is no longer a manual toggle — visiting an item's detail page (`ArticleView`) marks it read automatically via a `useEffect` on mount. `useReadProgress()` now exposes `markRead(id)` (one-directional, idempotent) instead of `toggleRead`; the checkbox button and `onToggleRead` prop are gone from `FeedCard` entirely — `isRead` still drives the dimmed styling, just set upstream instead of by a click on the card.
 - [x] Some items were rendering in Chinese instead of English — the local model (multilingual) was following the source text's language rather than always translating. Root cause: nothing in the prompt said to always respond in English. Added an explicit hard rule to `SYSTEM_INSTRUCTION`, bumped `PROMPT_VERSION` to `v5`, verified directly against the specific item that had been in Chinese before reprocessing the full corpus.
+- [x] Full-corpus `v5` reprocessing completed — the earlier background run had silently stopped after one batch (killed when its session ended, not an error), leaving only 88/135 on `v5`; resumed via the same catch-up loop (`POST /summarize/run?limit=50` until `candidates <= 0`) and confirmed 135/135 in `item_metadata`.
+- [x] Even with the `v5` English-only hard rule, 2 of 135 items (both GitHub repos with READMEs entirely in Chinese, no English content at all in the source text — ids 816 `ramoncjj/mini-agent`, 949 `Honglouqaz/self-evolving-quant-agent`) still came back with Chinese headlines/summaries; 3 retries each, same result — a genuine ceiling of the 7B model when the source gives it nothing to anchor English output to, not something a prompt tweak fixes. Per the "translate or omit" instruction, omitted: their `v5` rows were deleted from `summaries`/`articles`/`item_metadata` (raw_items kept, so dedupe still holds), which drops them out of `/feed`, `/timeline`, and `/search` since all three inner-join on an exact `prompt_version` match. They'll keep getting picked up as "unsummarized" candidates by future catch-up/cron runs and keep failing the same way — harmless (one wasted local LLM call each per run) but worth knowing if they're ever noticed recurring in logs. Real fix would need a bigger/different model or a manual translation pass; not worth building special-case infrastructure for 2 items.
+
+### Follow-up (same day): dark mode
+
+Reverses the Phase 2.9 decision to drop dark mode. Since the mockup never
+specified one, the dark palette is a bespoke extension of the light "cool
+paper" language (cool grays, not warm/black; the two structural accents
+brightened for legibility on dark surfaces) rather than anything from the
+Figma brief.
+
+- [x] Class-based (`.dark` on `<html>`), not just `prefers-color-scheme` — a manual toggle in the header overrides system preference, persisted to `localStorage` (`theme-mode.ts`, mirrors the `useSyncExternalStore` pattern already used by `read-progress.ts`/`learn-progress.ts`). Defaults to system preference on first visit.
+- [x] All theme tokens (`bg`/`card`/`ink`/`muted`/`hairline`/`accent-casual`/`accent-dev`) restructured as CSS custom properties with a `.dark` override block in `globals.css`, fed into Tailwind's `@theme inline` — every existing `bg-*`/`text-*`/`border-*` utility class picks up dark values automatically, no per-component `dark:` variants needed. `Tailwind v4` needs an explicit `@custom-variant dark (&:where(.dark, .dark *));` for class-based (rather than media-query) dark mode.
+- [x] `theme.ts`'s `ACCENT_CASUAL`/`ACCENT_DEV` now resolve to `var(--accent-casual)`/`var(--accent-dev)` instead of literal hex, so every inline-style consumer (`LevelToggle`, `FeedCard`, `ArticleView`, `JargonTooltip`, etc.) stays correct in both themes with zero component changes.
+- [x] `ThemeScript` (inline `next/script` with `strategy="beforeInteractive"` in the root layout) applies the class before hydration to avoid a flash of the wrong theme on load.
+- [x] Fixed five spots that hardcoded `text-white` on a `bg-ink` surface (category-filter pills, the Learn "mark as read" button/checkmark badge, the footer subscribe button) — `ink` itself flips between near-black and near-white across themes, so these needed `text-bg` instead to stay legible in both. Left `text-white`-on-accent-color spots (the toggle's active pill, "View source" button) alone since both accent colors were chosen to keep working with white text in either theme.
+- Not visually screenshot-tested — no browser tool available in this session. Verified via a clean `npm run build`, and by inspecting the compiled dev CSS output directly to confirm the `.dark { ... }` override block and the inlined `beforeInteractive` script are both present as expected.
 
 ## Known follow-ups
 

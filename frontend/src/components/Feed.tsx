@@ -94,7 +94,7 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
               onClick={() => setCategory(option)}
               className={`rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-medium tracking-[0.05em] uppercase transition-colors ${
                 category === option
-                  ? "border-ink bg-ink text-white"
+                  ? "border-ink bg-ink text-bg"
                   : "border-hairline text-muted hover:border-ink"
               }`}
             >

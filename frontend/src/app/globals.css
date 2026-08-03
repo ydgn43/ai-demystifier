@@ -1,20 +1,46 @@
 @import "tailwindcss";
 
+/* Manual dark mode via a `.dark` class on <html> (see theme.ts / ThemeScript),
+   not just `prefers-color-scheme` — set by ThemeToggle, defaulting to system
+   preference on first visit. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Cool paper palette + IBM Plex pairing — see mockup/src/imports/pasted_text
-   for the full design brief. Deliberately no dark mode: the mockup never
-   addressed one, and this is a specific, committed light "paper" aesthetic
-   rather than a generic theme. */
+   for the full design brief. The mockup itself never addressed dark mode, so
+   the --dark-* values below are a bespoke extension of the same language
+   (cool grays, not warm/black; accents brightened for legibility on dark
+   surfaces) rather than anything lifted from the brief. */
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --ink: #14171c;
+  --muted: #5c6470;
+  --hairline: #e3e6ea;
+  --accent-casual: #c2410c;
+  --accent-dev: #1f52e0;
+}
+
+.dark {
+  --bg: #14171c;
+  --card: #1c2027;
+  --ink: #edeff2;
+  --muted: #9aa1ac;
+  --hairline: #2b2f38;
+  --accent-casual: #e8720f;
+  --accent-dev: #4c82f7;
+}
+
 @theme inline {
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
 
-  --color-bg: #f5f6f8;
-  --color-card: #ffffff;
-  --color-ink: #14171c;
-  --color-muted: #5c6470;
-  --color-hairline: #e3e6ea;
-  --color-accent-casual: #c2410c;
-  --color-accent-dev: #1f52e0;
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-hairline: var(--hairline);
+  --color-accent-casual: var(--accent-casual);
+  --color-accent-dev: var(--accent-dev);
 }
 
 * {

@@ -28,7 +28,7 @@ export function Footer() {
           />
           <button
             type="submit"
-            className="border-l border-hairline bg-ink px-4 py-2 font-mono text-[11px] font-semibold tracking-[0.07em] whitespace-nowrap text-white uppercase"
+            className="border-l border-hairline bg-ink px-4 py-2 font-mono text-[11px] font-semibold tracking-[0.07em] whitespace-nowrap text-bg uppercase"
           >
             Subscribe
           </button>

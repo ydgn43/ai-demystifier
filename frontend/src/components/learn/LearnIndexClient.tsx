@@ -45,7 +45,7 @@ export function LearnIndexClient({ articles }: { articles: LearnArticle[] }) {
                       {isDone && (
                         <span
                           aria-label="Completed"
-                          className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] text-white"
+                          className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-[10px] text-bg"
                         >
                           ✓
                         </span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "News" },
@@ -36,6 +37,8 @@ export function Header() {
               className="w-28 border border-hairline bg-card px-2.5 py-1.5 font-mono text-[11px] text-ink placeholder:text-muted focus:outline-none sm:w-40"
             />
           </form>
+
+          <ThemeToggle />
         </div>
       </div>
     </header>
