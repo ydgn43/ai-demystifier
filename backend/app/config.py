@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     database_url: str
     cron_secret: str
     github_token: str | None = None
-    gemini_api_key: str | None = None
+    ollama_host: str = "http://localhost:11434"
 
 
 settings = Settings()

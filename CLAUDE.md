@@ -18,7 +18,11 @@ actually broken down — flag it and ask first, don't just add it.
 - Frontend: Next.js (App Router), React, TypeScript, Tailwind CSS
 - Backend: Python, FastAPI
 - Database: PostgreSQL (Neon or Supabase)
-- LLM: Google Gemini API (free tier), Gemini 2.5 Flash for the summarization pipeline
+- LLM: local Ollama (`qwen2.5:7b-instruct`) for the summarization pipeline — switched
+  from the Gemini free tier after hitting its 20-requests/day cap (see PROGRESS.md).
+  No external quota locally, but this needs a real story before Phase 4 deploy: a
+  serverless host can't run Ollama, so production needs either a GPU-capable host for
+  the backend or falling back to a hosted API — not decided yet.
 - Deploy: Vercel (frontend), same Postgres provider for hosted DB
 - Cron: GitHub Actions hitting a protected endpoint, daily at 06:00 UTC
 
