@@ -1,4 +1,4 @@
-import type { FeedResponse, ItemDetail } from "./types";
+import type { FeedItem, FeedResponse, ItemDetail } from "./types";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://127.0.0.1:8000";
 
@@ -31,5 +31,20 @@ export async function getItem(id: number): Promise<ItemResult> {
     return { ok: true, item };
   } catch {
     return { ok: false, status: null, error: "could not reach the backend" };
+  }
+}
+
+export type SearchResult = { ok: true; items: FeedItem[] } | { ok: false; error: string };
+
+export async function searchItems(q: string): Promise<SearchResult> {
+  try {
+    const res = await fetch(`${BACKEND_API_URL}/search?${new URLSearchParams({ q })}`);
+    if (!res.ok) {
+      return { ok: false, error: `backend returned ${res.status}` };
+    }
+    const items = (await res.json()) as FeedItem[];
+    return { ok: true, items };
+  } catch {
+    return { ok: false, error: "could not reach the backend" };
   }
 }

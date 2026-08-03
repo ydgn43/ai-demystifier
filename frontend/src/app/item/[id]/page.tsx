@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getItem } from "@/lib/api";
@@ -6,6 +7,35 @@ import { ArticleView } from "@/components/ArticleView";
 // Same reasoning as the feed page — an item's content can change on
 // reprocessing, so this must not be baked in as a build-time snapshot.
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const itemId = Number(id);
+  if (!Number.isInteger(itemId)) {
+    return {};
+  }
+
+  const result = await getItem(itemId);
+  if (!result.ok) {
+    return {};
+  }
+
+  const { item } = result;
+  return {
+    title: item.title,
+    description: item.level1,
+    openGraph: {
+      title: item.title,
+      description: item.level1,
+      type: "article",
+      publishedTime: item.published_at ?? undefined,
+    },
+  };
+}
 
 export default async function ItemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

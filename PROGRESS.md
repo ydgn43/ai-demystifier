@@ -64,6 +64,22 @@ general news. Fixed by giving the feed the same temporal + topical shape.
 - [x] `GET /feed` now returns `{today: [...], this_week: [...]}` instead of a flat list (`FeedResponse` schema)
 - [x] Frontend `Feed.tsx` renders both time sections, each grouped by category with subheadings/counts; shows an explicit "no new items today — here's this week" line when Today is empty (mirrors the off-week framing directly)
 
+## Phase 2.8 — Enrichment: SEO/shareability, search, editorial identity — DONE
+
+User feedback: the site felt like "just an information dump." Presented
+four concrete, realistically-scoped options (SEO polish, search, email
+digest, editorial identity); user picked three, explicitly skipping the
+email digest since it needs new infrastructure (email service + subscriber
+storage) that CLAUDE.md says to flag before adding, not just build.
+
+- [x] `GET /search?q=...` (new `backend/app/routes/search.py`) — Postgres full-text search (`to_tsvector`/`plainto_tsquery`, built in, no new infra) over title + both teasers + tags, reuses the existing `FeedItem` schema (its `score` field holds relevance rank instead of recency/popularity here)
+- [x] `frontend/src/app/search/page.tsx` — reads `?q=`, renders results via the existing `FeedCard` (no new card component), defaults to casual level with no toggle to keep it simple
+- [x] Shared `Header.tsx` (site name, About link, search form) now renders once from the root layout instead of each page duplicating its own branding
+- [x] `frontend/src/app/about/page.tsx` — static page explaining what the site is and how it works
+- [x] Per-item `generateMetadata()` on `/item/[id]` — shared links now show that item's real title/description instead of the generic site metadata; added `metadataBase` (`SITE_URL` env var) so OG tags resolve correctly
+- [x] `sitemap.ts` and `robots.ts` (Next.js file conventions) — sitemap explicitly marked `force-dynamic` (same reasoning as the feed page: a build-time snapshot would miss all new items until the next deploy)
+- [x] Replaced the default Next.js starter favicon with a programmatically-generated one (`icon.tsx` via `next/og`)
+
 ## Phase 3 — Automation — DONE (pending Phase 4 wiring)
 
 - [x] GitHub Actions workflow: daily cron at 06:00 UTC hitting protected `/ingest/run` then `/summarize/run` (`.github/workflows/daily-digest.yml`)
@@ -76,7 +92,7 @@ general news. Fixed by giving the feed the same temporal + topical shape.
 - [ ] Backend deployed (host not yet decided — CLAUDE.md only specifies Vercel for the frontend)
 - [ ] **New blocker as of Phase 2.6**: the Demystifier now depends on a local Ollama instance. A serverless/typical PaaS host can't run that. Needs a decision before this phase can proceed — options are a GPU-capable VM/host running both the backend and Ollama, or falling back to a hosted API (Gemini paid tier, or another provider) in production while keeping Ollama for local dev.
 - [ ] Frontend deployed to Vercel, pointed at the deployed backend
-- [ ] Production env vars/secrets set (`DATABASE_URL`, `CRON_SECRET`, `GITHUB_TOKEN`, plus whatever the Ollama-vs-hosted-API decision above requires)
+- [ ] Production env vars/secrets set (`DATABASE_URL`, `CRON_SECRET`, `GITHUB_TOKEN`, `SITE_URL` set to the real domain, plus whatever the Ollama-vs-hosted-API decision above requires)
 - [ ] GitHub Actions cron pointed at the production endpoint
 
 ## Phase 5 — Polish / post-launch

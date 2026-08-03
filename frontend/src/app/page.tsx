@@ -10,14 +10,9 @@ export default async function Home() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-10">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          AI News Digest
-        </h1>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">
-          The day&apos;s AI papers, models, and tools — demystified.
-        </p>
-      </header>
+      <p className="mb-8 text-slate-500 dark:text-slate-400">
+        The day&apos;s AI papers, models, and tools — demystified.
+      </p>
 
       {!result.ok ? (
         <p className="py-16 text-center text-red-600 dark:text-red-400">
