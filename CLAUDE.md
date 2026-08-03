@@ -29,7 +29,9 @@ actually broken down — flag it and ask first, don't just add it.
 ## Data sources (MVP = these three, in this priority order)
 
 1. Hugging Face Daily Papers — free, no auth, community-ranked
-2. GitHub Search API — repos sorted by stars gained today
+2. GitHub Search API — repos created in the last day, sorted by stars, scoped to
+   AI/ML topics (see `_AI_TOPICS` in `backend/app/fetchers/github.py`) since GitHub
+   is the only one of the three sources with no inherent AI scoping otherwise
 3. arXiv API — cs.LG, cs.CL, cs.AI categories
 
 X/Twitter is explicitly out of scope for the MVP due to API cost. Don't add it
