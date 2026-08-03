@@ -13,16 +13,36 @@ const CATEGORY_STYLES: Record<string, string> = {
 export function FeedCard({
   item,
   level,
+  isRead,
+  onToggleRead,
 }: {
   item: FeedItem;
   level: "casual" | "developer";
+  // Read/unread is opt-in — only the Timeline wires these up. Feed/Search
+  // render exactly as before when they're omitted.
+  isRead?: boolean;
+  onToggleRead?: () => void;
 }) {
   const body = level === "developer" ? item.level2 : item.level1;
   const date = formatDate(item.published_at);
 
   return (
-    <li className="py-6">
+    <li className={`py-6 ${isRead ? "opacity-60" : ""}`}>
       <div className="flex items-center gap-2 text-xs">
+        {onToggleRead && (
+          <button
+            type="button"
+            onClick={onToggleRead}
+            aria-label={isRead ? "Mark as unread" : "Mark as read"}
+            className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] leading-none transition-colors ${
+              isRead
+                ? "border-emerald-500 bg-emerald-500 text-white"
+                : "border-slate-300 text-transparent hover:border-slate-400 dark:border-slate-600"
+            }`}
+          >
+            ✓
+          </button>
+        )}
         <span
           className={`rounded-full px-2 py-0.5 font-medium ${
             CATEGORY_STYLES[item.category] ??

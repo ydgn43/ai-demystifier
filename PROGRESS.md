@@ -127,6 +127,20 @@ interactive features plus general polish.
 - [x] "Related right now" section per article — reuses the existing `/search` endpoint/function as-is, ties the static Learn content back into the live digest
 - [x] `/learn/[slug]` lost its `generateStaticParams` static prerendering once it started fetching live related items — same staleness bug as the feed page and sitemap, fixed the same way (`force-dynamic`)
 
+### Timeline: read/unread tracking (same day)
+
+Asked to bring the Learn interactivity to Timeline "where useful" — scoped
+deliberately rather than porting everything: reading-time estimates, prev/
+next, and related-items don't fit Timeline's shape (teaser-only cards,
+already has chronological pagination, items are already live respectively).
+Read/unread tracking does fit well — it's the core interaction of an inbox
+or RSS reader, and Timeline's whole purpose is "catch up on what you
+missed."
+
+- [x] `timeline-progress.ts` — same `useSyncExternalStore`/`localStorage` pattern as Learn's progress hook, separate storage key, tracks item IDs instead of slugs
+- [x] `FeedCard` gained optional `isRead`/`onToggleRead` props (opt-in — Feed and Search call it with neither and render exactly as before); toggling shows a checkmark and dims the card, the classic read-item treatment
+- [x] `TimelineResults.tsx` (new client component) — owns the progress hook, shows "X of Y read on this page", renders the date-grouped list with read-tracking wired in. `timeline/page.tsx` itself stays a server component for fetching/filtering/pagination, same as before
+
 ## Known follow-ups
 
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.

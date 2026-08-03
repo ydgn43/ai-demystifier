@@ -1,9 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getTimeline } from "@/lib/api";
-import { FeedCard } from "@/components/FeedCard";
-import { formatDate } from "@/lib/date";
-import type { Category, FeedItem } from "@/lib/types";
+import { TimelineResults } from "@/components/timeline/TimelineResults";
+import type { Category } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Timeline — AI News Digest",
@@ -14,24 +13,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const CATEGORIES: Category[] = ["Models", "Research", "Developer Tools", "Industry News"];
-
-function groupByDate(items: FeedItem[]): [string, FeedItem[]][] {
-  // Items are ordered by fetched_at (ingest time), not published_at, so
-  // two items sharing a published date can be non-adjacent in the list —
-  // group by a map instead of merging only consecutive entries, otherwise
-  // the same date can appear as two separate groups (duplicate React keys).
-  const groups = new Map<string, FeedItem[]>();
-  for (const item of items) {
-    const key = formatDate(item.published_at) ?? "Unknown date";
-    const existing = groups.get(key);
-    if (existing) {
-      existing.push(item);
-    } else {
-      groups.set(key, [item]);
-    }
-  }
-  return [...groups.entries()];
-}
 
 function filterHref(category: string | undefined): string {
   return category ? `/timeline?category=${encodeURIComponent(category)}` : "/timeline";
@@ -88,20 +69,7 @@ export default async function TimelinePage({
         <p className="py-16 text-center text-slate-500 dark:text-slate-400">Nothing here yet.</p>
       ) : (
         <>
-          <div className="mt-6 space-y-8">
-            {groupByDate(result.items).map(([date, items]) => (
-              <div key={date}>
-                <h2 className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                  {date}
-                </h2>
-                <ul className="mt-1 divide-y divide-slate-200 dark:divide-slate-800">
-                  {items.map((item) => (
-                    <FeedCard key={item.id} item={item} level="casual" />
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <TimelineResults items={result.items} />
 
           {result.next_cursor && (
             <Link
