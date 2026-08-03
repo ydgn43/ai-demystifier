@@ -1,10 +1,31 @@
 export type LearnLevel = "beginner" | "intermediate" | "advanced";
 
+export const LEVELS: LearnLevel[] = ["beginner", "intermediate", "advanced"];
+
+export const LEVEL_LABELS: Record<LearnLevel, string> = {
+  beginner: "Beginner",
+  intermediate: "Intermediate",
+  advanced: "Advanced",
+};
+
+// A green -> amber -> rose difficulty progression, distinct from the
+// per-category badge colors used elsewhere (Models/Research/etc.) so the
+// two badge systems don't read as the same kind of label.
+export const LEVEL_STYLES: Record<LearnLevel, string> = {
+  beginner: "bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300",
+  intermediate: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+  advanced: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
+};
+
 export type LearnArticle = {
   slug: string;
   title: string;
   teaser: string;
   level: LearnLevel;
+  icon: string;
+  // Short, retrieval-friendly query for the "related right now" section —
+  // full-text search works better on a focused term than a full question.
+  keywords: string;
   body: string[];
 };
 
@@ -18,6 +39,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "What is an LLM?",
     teaser: "The basics of what a large language model actually is, in plain terms.",
     level: "beginner",
+    icon: "🤖",
+    keywords: "language model",
     body: [
       `An LLM — large language model — is a type of AI trained on huge amounts of text to predict and generate language. "Large" refers to its parameter count: the number of internal values the model adjusts during training, often in the billions.`,
       `At a high level, an LLM is trained to predict the next word (or word-piece, called a token) given everything before it. Doing that well, across enough text, forces the model to pick up patterns of grammar, facts, reasoning, and style along the way — not because it was explicitly taught grammar or facts, but because predicting text accurately requires implicitly learning them.`,
@@ -31,6 +54,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "How transformers work",
     teaser: "The architecture behind almost every modern language model, explained without the math.",
     level: "beginner",
+    icon: "🧩",
+    keywords: "transformer architecture attention",
     body: [
       `Transformers are the neural network architecture underlying essentially all modern LLMs — GPT, Claude, Llama, Gemini, and the rest. They were introduced in a 2017 paper, and they replaced older architectures that processed text strictly one word at a time.`,
       `The core idea is the attention mechanism: it lets the model weigh how relevant every other part of the input is when processing or generating each word, instead of only looking at nearby words. That means a pronoun near the end of a paragraph can directly "attend to" the noun it refers to at the start, no matter how much text sits in between.`,
@@ -44,6 +69,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "Training vs inference",
     teaser: "Two very different phases of a model's life, and why the difference matters.",
     level: "beginner",
+    icon: "⚙️",
+    keywords: "training inference",
     body: [
       `Training is the process of teaching a model from scratch: feeding it huge amounts of text and repeatedly adjusting its internal parameters so its predictions get better. For a large model, this can take weeks on clusters of specialized hardware, and cost anywhere from thousands to tens of millions of dollars depending on the model's size.`,
       `Inference is what happens every time the trained model is actually used: you give it a prompt, it runs a single pass through its now-fixed parameters, and produces an output. Inference is comparatively cheap and fast — which is why a service can handle millions of requests a day using a model that took months to train.`,
@@ -57,6 +84,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "What is fine-tuning?",
     teaser: "Taking a general-purpose model and specializing it, without starting from scratch.",
     level: "intermediate",
+    icon: "🎯",
+    keywords: "fine-tuning",
     body: [
       `Fine-tuning takes a model that's already been trained broadly — a "pretrained" or "base" model — and continues training it on a smaller, more specific dataset, to specialize its behavior for a particular task, domain, or style.`,
       `The reason this works, and is worth doing instead of training from scratch, is that the model already has a broad understanding of language, facts, and reasoning from its initial training. Fine-tuning only needs to nudge that existing capability toward a narrower use case, which takes far less data and compute than starting from zero.`,
@@ -70,6 +99,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "Retrieval-Augmented Generation (RAG)",
     teaser: "How to get a model to answer using information it wasn't trained on.",
     level: "intermediate",
+    icon: "📚",
+    keywords: "retrieval augmented generation RAG",
     body: [
       `RAG addresses two LLM limitations at once: models don't know anything after their training cutoff, and they sometimes state incorrect things with total confidence. RAG has the model look up relevant information from an external source before answering, rather than relying purely on what it memorized during training.`,
       `Roughly, it works like this: a user's question is used to search a knowledge base — documents, a database, the web — for relevant passages; those passages are inserted into the model's prompt alongside the question; the model then generates an answer grounded in that retrieved text instead of purely from memory.`,
@@ -83,6 +114,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "What are AI agents?",
     teaser: "The difference between a model that talks and a model that acts.",
     level: "intermediate",
+    icon: "🕹️",
+    keywords: "agent",
     body: [
       `A plain LLM, on its own, just takes text in and produces text out. An "agent" wraps a model with the ability to take actions — calling external tools, running code, browsing the web, reading and writing files — and to decide which actions to take, in what order, toward some goal.`,
       `The basic loop looks like this: the model is given a goal and a description of the tools available to it; it decides what to do next (say, "search the web for X"); that action is actually carried out by the surrounding system; the result is fed back to the model; and it decides the next step, repeating until it judges the goal complete.`,
@@ -96,6 +129,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "Open weights vs API models",
     teaser: "Two very different ways to actually get and use a model.",
     level: "intermediate",
+    icon: "🔓",
+    keywords: "open weights open source model",
     body: [
       `An API model — the way most of the largest, most capable models are offered — is accessed only by sending requests to a company's servers over the internet. You never get the model file itself, just its outputs, and the company controls how it's run, updated, priced, or discontinued.`,
       `An open-weights model is one where the trained parameters themselves are published for anyone to download and run, on their own hardware or any cloud provider of their choosing. That gives full control over deployment, at the cost of being responsible for the infrastructure to actually run it.`,
@@ -109,6 +144,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "Quantization: making models smaller",
     teaser: "How a huge model gets small enough to run on ordinary hardware.",
     level: "advanced",
+    icon: "📦",
+    keywords: "quantization",
     body: [
       `A model's parameters — its weights — are just numbers, normally stored with fairly high precision, such as 16 or 32 bits per number. Quantization reduces that precision, commonly down to 8 or 4 bits per number, which shrinks the model's memory footprint and speeds up inference, at some cost to accuracy.`,
       `This matters because a large model at full precision can need far more memory than an ordinary GPU has available. Quantizing it can be the difference between needing a data-center-grade GPU and running comfortably on a decent gaming GPU, or even a laptop.`,
@@ -122,6 +159,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "Evaluation & benchmarks",
     teaser: "How anyone claims a model is \"better\" than another one, and why to be skeptical.",
     level: "advanced",
+    icon: "📊",
+    keywords: "benchmark evaluation",
     body: [
       `A benchmark is a standardized test — a fixed set of questions or tasks with known correct answers — used to measure and compare model performance. When an announcement says a model "scores X% on benchmark Y," this is what it means.`,
       `Benchmarks exist because, without them, comparing models would be purely subjective. A shared, fixed test lets different labs' models be compared on the same footing, and lets a single lab track whether a change actually improved their model rather than just feeling like an improvement.`,
@@ -135,6 +174,8 @@ export const LEARN_ARTICLES: LearnArticle[] = [
     title: "Alignment & safety basics",
     teaser: "What people mean when they talk about making AI behave the way we actually want.",
     level: "advanced",
+    icon: "🛡️",
+    keywords: "alignment safety",
     body: [
       `Alignment refers to the set of techniques and goals aimed at making a model's behavior match what its developers — and ideally its users and society more broadly — actually want, as opposed to whatever behavior falls out of its training process by default.`,
       `That gap isn't automatic to close. A model trained purely to predict plausible next words from internet text will happily reproduce biases, misinformation, or harmful content that appeared in that text, because "plausible continuation" and "helpful, honest, harmless response" are not the same target. Alignment work exists specifically to close that gap.`,

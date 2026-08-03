@@ -112,8 +112,20 @@ presented.
 - [x] `GET /timeline?category=&before=&limit=` (new `backend/app/routes/timeline.py`) — reverse-chronological over the same join `/feed`/`/search` use, cursor-paginated on `fetched_at` (stable, non-null), optional category filter; new `TimelineResponse` schema, `score` unused/`0.0` here since this view is chronological, not ranked
 - [x] `frontend/src/app/timeline/page.tsx` — plain server component (no client JS): category filter and "Older →" pagination are just links with query params, consistent with the search page and respecting `BACKEND_API_URL` staying server-only. Results grouped under date headers, reuses `FeedCard`
 - [x] `frontend/src/lib/learn-content.ts` — 10 hand-written articles (beginner→advanced: what is an LLM, transformers, training vs inference, fine-tuning, RAG, agents, open weights vs API models, quantization, evaluation/benchmarks, alignment basics). Static data file, no DB/backend involvement — matches "written once, low-frequency updates," avoids new infrastructure for content that doesn't need it
-- [x] `/learn` index (grouped by level) + `/learn/[slug]` (via `generateStaticParams`, so these prerender as static HTML at build time — genuinely static content, unlike the digest pages) — reuses `renderWithGlossary()` on article bodies
+- [x] `/learn` index (grouped by level) + `/learn/[slug]` — reuses `renderWithGlossary()` on article bodies
 - [x] Header nav updated (Timeline, Learn), both added to `sitemap.ts`
+
+### Learn redesign (same day) — visual + interactive polish
+
+Initial version read as a plain wiki page. User asked for it to feel more
+interactive, mainstream, and visually appealing; picked all 3 proposed
+interactive features plus general polish.
+
+- [x] Card-grid index (`LearnIndexClient.tsx`) — icons, level color-coding (teal/amber/rose, deliberately distinct from the category badge colors), reading-time estimates, grouped by level
+- [x] Reading progress tracking, client-side only (`learn-progress.ts`, `localStorage`, no accounts needed) — explicit "Mark as read" toggle rather than auto-marking on view, checkmarks + a "3 of 10 completed" progress bar on the index. Built with `useSyncExternalStore` (React's own recommended pattern for this), not `useEffect` + `setState` — the lint rule `react-hooks/set-state-in-effect` correctly caught the first draft
+- [x] Prev/Next navigation between articles, computed from `LEARN_ARTICLES`' fixed order
+- [x] "Related right now" section per article — reuses the existing `/search` endpoint/function as-is, ties the static Learn content back into the live digest
+- [x] `/learn/[slug]` lost its `generateStaticParams` static prerendering once it started fetching live related items — same staleness bug as the feed page and sitemap, fixed the same way (`force-dynamic`)
 
 ## Known follow-ups
 
