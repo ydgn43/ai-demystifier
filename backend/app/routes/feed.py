@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends
 
 from app.db import get_pool
 from app.pipeline.demystifier import PROMPT_VERSION
-from app.ranking import rank_items
-from app.schemas.feed_item import FeedItem
+from app.ranking import split_and_rank
+from app.schemas.feed_item import FeedItem, FeedResponse
 
 router = APIRouter()
 
@@ -26,9 +26,12 @@ _SELECT_CANDIDATES_SQL = """
 """
 
 
-@router.get("/feed", response_model=list[FeedItem])
-async def get_feed(pool: asyncpg.Pool = Depends(get_pool)) -> list[FeedItem]:
+@router.get("/feed", response_model=FeedResponse)
+async def get_feed(pool: asyncpg.Pool = Depends(get_pool)) -> FeedResponse:
     async with pool.acquire() as conn:
         rows = await conn.fetch(_SELECT_CANDIDATES_SQL, PROMPT_VERSION, _CANDIDATE_POOL)
-    ranked = rank_items([dict(row) for row in rows])
-    return [FeedItem(**row) for row in ranked]
+    buckets = split_and_rank([dict(row) for row in rows])
+    return FeedResponse(
+        today=[FeedItem(**row) for row in buckets["today"]],
+        this_week=[FeedItem(**row) for row in buckets["this_week"]],
+    )

@@ -14,6 +14,11 @@ export type FeedItem = {
   score: number;
 };
 
+export type FeedResponse = {
+  today: FeedItem[];
+  this_week: FeedItem[];
+};
+
 export type ItemDetail = {
   id: number;
   source: string;

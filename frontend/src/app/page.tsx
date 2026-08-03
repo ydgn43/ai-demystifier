@@ -23,12 +23,12 @@ export default async function Home() {
         <p className="py-16 text-center text-red-600 dark:text-red-400">
           Couldn&apos;t load today&apos;s digest: {result.error}
         </p>
-      ) : result.items.length === 0 ? (
+      ) : result.today.length === 0 && result.this_week.length === 0 ? (
         <p className="py-16 text-center text-slate-500 dark:text-slate-400">
           No items yet — check back after the next digest run.
         </p>
       ) : (
-        <Feed items={result.items} />
+        <Feed today={result.today} thisWeek={result.this_week} />
       )}
     </div>
   );

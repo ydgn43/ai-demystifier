@@ -53,6 +53,17 @@ to move to a local model instead of a higher-tier paid API key.
 - [x] Removed the Gemini RPM pacing sleep in `summarize.py` — no external quota to respect locally
 - [x] `google-genai` dependency dropped, `ollama` added; `GEMINI_API_KEY` removed from `.env`/`.env.example`, replaced with optional `OLLAMA_HOST` (defaults to `http://localhost:11434`)
 
+## Phase 2.7 — Restructure feed: Today vs Earlier this week, grouped by category — DONE
+
+User feedback: the feed felt "messy" — one flat list of 25 items ranked
+across everything with no structure, unlike e.g. an F1 news site where
+race-weekend coverage feels current/connected and off-weeks read as clearly
+general news. Fixed by giving the feed the same temporal + topical shape.
+
+- [x] `ranking.py`: added `split_and_rank()` — buckets candidates by age (today ≤24h, this week 24h-7d, older dropped from this view) and ranks each bucket **independently** rather than slicing one global ranking, so "this week" has real content instead of leftovers (global recency-decay already biased everything toward "today")
+- [x] `GET /feed` now returns `{today: [...], this_week: [...]}` instead of a flat list (`FeedResponse` schema)
+- [x] Frontend `Feed.tsx` renders both time sections, each grouped by category with subheadings/counts; shows an explicit "no new items today — here's this week" line when Today is empty (mirrors the off-week framing directly)
+
 ## Phase 3 — Automation — DONE (pending Phase 4 wiring)
 
 - [x] GitHub Actions workflow: daily cron at 06:00 UTC hitting protected `/ingest/run` then `/summarize/run` (`.github/workflows/daily-digest.yml`)

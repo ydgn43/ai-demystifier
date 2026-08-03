@@ -15,3 +15,8 @@ class FeedItem(BaseModel):
     jargon_terms: list[str]
     published_at: datetime | None
     score: float
+
+
+class FeedResponse(BaseModel):
+    today: list[FeedItem]
+    this_week: list[FeedItem]
