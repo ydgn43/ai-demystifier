@@ -26,8 +26,3 @@ class FeedItem(BaseModel):
 class FeedResponse(BaseModel):
     today: list[FeedItem]
     this_week: list[FeedItem]
-
-
-class TimelineResponse(BaseModel):
-    items: list[FeedItem]
-    next_cursor: str | None
