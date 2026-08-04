@@ -88,21 +88,25 @@ storage) that CLAUDE.md says to flag before adding, not just build.
 
 ## Phase 4 — Deploy
 
-**Decision made (2026-08-04)**, resolving the Phase 2.6 Ollama-hosting blocker:
-self-host the backend + Ollama on this PC (zero pipeline code changes, zero
-GPU cloud cost), exposed via Tailscale Funnel for a stable public HTTPS URL
-without port-forwarding/a static IP. Postgres still moves to a hosted free
-tier (Neon/Supabase) so the DB survives this machine being off; frontend
-still deploys to Vercel as originally planned. Full step-by-step runbook:
-`DEPLOY.md`. Accepted tradeoff: the live site (`/feed`, `/search`,
-`/item/[id]`) is only up while this PC is on and connected — `/learn` and
-`/timeline` are static and unaffected. Revisit if that stops being fine.
+**Decision made (2026-08-04), updated same day**, resolving the Phase 2.6
+Ollama-hosting blocker: self-host the backend + Ollama **and** Postgres,
+all on this PC (zero pipeline code changes, zero GPU cloud cost, no hosted-
+DB account needed either) — Postgres stays purely local, never exposed
+externally, since only the backend on the same machine ever talks to it
+directly. The backend is exposed via Tailscale Funnel for a stable public
+HTTPS URL without port-forwarding/a static IP. Frontend still deploys to
+Vercel as originally planned. Full step-by-step runbook: `DEPLOY.md`.
+Accepted tradeoffs: the live site (`/feed`, `/search`, `/item/[id]`) is only
+up while this PC is on and connected — `/learn` and `/timeline` are static
+and unaffected; and the database now has no managed backups, just
+`docker-compose.yml`'s `restart: unless-stopped` plus an optional manual
+`pg_dump` cadence. Revisit either if they stop being fine.
 
-- [ ] Hosted Postgres (Neon or Supabase) provisioned, migrations applied — `DEPLOY.md` step 2
+- [ ] Postgres confirmed to survive a real reboot (Docker Desktop start-on-boot) — `DEPLOY.md` step 2
 - [ ] Backend exposed via Tailscale Funnel, running persistently (not just an interactive terminal session) — `DEPLOY.md` step 1
 - [x] ~~New blocker as of Phase 2.6~~ — resolved above
 - [ ] Frontend deployed to Vercel, pointed at the deployed backend — `DEPLOY.md` step 3
-- [ ] Production env vars/secrets set (`DATABASE_URL`, `CRON_SECRET`, `GITHUB_TOKEN`, `SITE_URL` set to the real domain) — `DEPLOY.md` steps 2-4
+- [ ] Production env vars/secrets set (`DATABASE_URL` stays as-is — local Postgres, no change needed; `CRON_SECRET`, `GITHUB_TOKEN`, `SITE_URL` set to the real domain) — `DEPLOY.md` steps 2-4
 - [x] GitHub Actions cron workflow ready to point at production — `BACKEND_URL`/`CRON_SECRET` wiring already existed; workflow itself improved 2026-08-04 to surface per-source/per-item failures as annotations instead of failing silently (see Known follow-ups). Setting the actual repo variable/secret values is `DEPLOY.md` step 4, still pending.
 
 ## Phase 5 — Polish / post-launch

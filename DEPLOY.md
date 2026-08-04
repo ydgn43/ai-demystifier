@@ -1,16 +1,25 @@
 # Deploy runbook (Phase 4)
 
-Decided approach (2026-08-04): the backend + Ollama keep running on this PC —
-no pipeline code changes, no GPU cloud bill. Tailscale Funnel exposes it to
-the internet over a stable HTTPS URL without port-forwarding or a static IP.
-Postgres moves to a free hosted tier (Neon/Supabase) so the DB survives this
-machine being off. The frontend deploys to Vercel as originally planned.
+Decided approach (2026-08-04, updated 2026-08-04): the backend + Ollama +
+Postgres **all** keep running on this PC — no pipeline code changes, no GPU
+cloud bill, no hosted-DB account needed. Tailscale Funnel exposes the
+backend to the internet over a stable HTTPS URL without port-forwarding or
+a static IP. Postgres stays purely local (`localhost:5432`, never exposed
+externally) — only the backend on this same machine ever talks to it
+directly; Vercel and GitHub Actions only ever talk to the backend's HTTP
+API, never the database. The frontend deploys to Vercel as originally
+planned.
 
-**Known tradeoff, accepted on purpose**: `/feed`, `/search`, `/item/[id]`,
-and the live parts of the site all fetch from the backend on every request
-(several routes are `force-dynamic`). That means the live site is only up
-when this PC is on and connected to the internet. `/learn` and `/timeline`
-are static and unaffected. Revisit if/when this stops being acceptable.
+**Known tradeoffs, accepted on purpose**:
+- `/feed`, `/search`, `/item/[id]`, and the live parts of the site all fetch
+  from the backend on every request (several routes are `force-dynamic`).
+  That means the live site is only up when this PC is on and connected to
+  the internet. `/learn` and `/timeline` are static and unaffected.
+- The database now only exists on this PC too — no managed backups, no
+  automatic failover. `docker-compose.yml` already sets
+  `restart: unless-stopped` so the container itself comes back after a
+  reboot, but that's not a backup. Worth a periodic `pg_dump` (see step 2)
+  until/unless this stops being acceptable.
 
 Steps below are grouped by who does them. Account creation, logins, and
 web-console clicks are yours — I can't do those. Code/config changes are
@@ -32,14 +41,34 @@ No CORS changes were needed — the frontend only calls the backend from the
 Next.js *server* (Vercel), never from the browser, so cross-origin rules
 don't apply here.
 
-## 2. Hosted Postgres — **you** create it, **migration run** is one command
+## 2. Postgres stays local — nothing new to set up
 
-1. Create a free project on [Neon](https://neon.tech) or [Supabase](https://supabase.com) — either works, nothing here is provider-specific.
-2. Copy the connection string it gives you.
-3. On this PC, edit the root `.env`: replace `DATABASE_URL` with that connection string (keep `CRON_SECRET`, `GITHUB_TOKEN`, etc. as they are).
-4. Apply the schema: `cd backend && python -m migrations.run_migrations` — idempotent, tracks what's applied in a `schema_migrations` table, safe to re-run.
-5. Restart the backend (step 1.3) so it picks up the new `DATABASE_URL`.
-6. Optional but recommended: `GITHUB_TOKEN` (root `.env`) — currently optional, but PROGRESS.md's "Known follow-ups" flags the unauthenticated GitHub Search API rate limit (60/hr) as genuinely tight against the ~35 requests/run the fetcher now makes since the AI/ML topic filter landed. Worth setting before this runs unattended daily. No scopes needed for public repos: https://github.com/settings/tokens
+`docker compose up -d` (already how dev runs it, per `README.md`) is the
+whole story — `DATABASE_URL` in the root `.env` stays exactly as it is now
+(`postgresql://ai_demystifier:ai_demystifier@localhost:5432/ai_demystifier`).
+No account, no connection string to copy, no `.env` edit here.
+
+1. Make sure Docker itself starts on boot (Docker Desktop → Settings →
+   General → "Start Docker Desktop when you sign in to your computer") so
+   the `postgres` container's `restart: unless-stopped` actually has
+   something to restart *into* after a real reboot, not just a Docker
+   Desktop crash while the machine stays on.
+2. Recommended, not required to start: a periodic backup, since this is now
+   the only copy of the data. Simplest option — a scheduled task (same
+   mechanism as step 1.6) running
+   `docker compose exec -T postgres pg_dump -U ai_demystifier ai_demystifier > backup-%date%.sql`
+   on whatever cadence feels right. Skip for now if you're fine with "this
+   PC's disk is the only copy" while the project is at this stage.
+3. Migrations only need running once, and probably already have been in
+   dev: `cd backend && python -m migrations.run_migrations` — idempotent,
+   tracks what's applied in a `schema_migrations` table, safe to re-run if
+   you're ever unsure.
+4. `GITHUB_TOKEN` (root `.env`) — currently optional, but PROGRESS.md's
+   "Known follow-ups" flags the unauthenticated GitHub Search API rate
+   limit (60/hr) as genuinely tight against the ~35 requests/run the
+   fetcher now makes since the AI/ML topic filter landed. Worth setting
+   before this runs unattended daily. No scopes needed for public repos:
+   https://github.com/settings/tokens
 
 ## 3. Frontend on Vercel — **you**
 
@@ -63,8 +92,8 @@ itself.
 ## Verification checklist
 
 - [ ] `https://<funnel-url>/health` reachable from outside your LAN
-- [ ] Backend survives a reboot of this PC (Task Scheduler entry + `tailscale funnel` both come back up)
-- [ ] `python -m migrations.run_migrations` run against the hosted DB, no errors
+- [ ] Backend *and* Postgres both survive a real reboot of this PC (Task Scheduler entry, Docker Desktop start-on-boot, and `tailscale funnel` all come back up on their own)
 - [ ] Vercel deployment shows real feed data, not an empty/error state
 - [ ] Manual `workflow_dispatch` run of Daily Digest succeeds against the real `BACKEND_URL`
 - [ ] `GITHUB_TOKEN` set given the rate-limit margin is thin
+- [ ] Decided whether/how often to run a `pg_dump` backup, given this PC is now the only copy of the data
