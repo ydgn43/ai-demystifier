@@ -1,8 +1,11 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { searchItems } from "@/lib/api";
 import { FeedCard } from "@/components/FeedCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ACCENT_CASUAL } from "@/lib/theme";
+import { LEARN_ARTICLES } from "@/lib/learn-content";
+import { HISTORY_MILESTONES } from "@/lib/history-content";
 
 export const metadata: Metadata = {
   title: "Search — AI News Digest",
@@ -33,27 +36,88 @@ export default async function SearchPage({
   );
 }
 
+function matches(haystack: string, q: string): boolean {
+  return haystack.toLowerCase().includes(q.toLowerCase());
+}
+
 async function SearchResults({ q }: { q: string }) {
   const result = await searchItems(q);
+  const feedItems = result.ok ? result.items : [];
 
-  if (!result.ok) {
-    return <EmptyState message="Search failed." hint={result.error} />;
-  }
+  // Learn/History are static data, not backed by Postgres full-text search
+  // — a plain substring match at request time is enough at this size (9
+  // Learn articles, 39 milestones), no new infra needed.
+  const learnMatches = LEARN_ARTICLES.filter(
+    (a) => matches(a.title, q) || matches(a.teaser, q) || matches(a.keywords, q),
+  );
+  const historyMatches = HISTORY_MILESTONES.filter(
+    (m) => matches(m.title, q) || matches(m.blurb, q),
+  );
+  const totalResults = feedItems.length + learnMatches.length + historyMatches.length;
 
-  if (result.items.length === 0) {
+  if (totalResults === 0) {
+    if (!result.ok) {
+      return <EmptyState message="Search failed." hint={result.error} />;
+    }
     return <EmptyState message={`No results for "${q}".`} />;
   }
 
   return (
     <>
       <p className="mt-3 mb-4 font-mono text-[11px] tracking-wide text-muted">
-        {result.items.length} result{result.items.length === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
+        {totalResults} result{totalResults === 1 ? "" : "s"} for &ldquo;{q}&rdquo;
       </p>
-      <ul className="flex flex-col gap-3">
-        {result.items.map((item) => (
-          <FeedCard key={item.id} item={item} level="casual" accentColor={ACCENT_CASUAL} animKey={0} />
-        ))}
-      </ul>
+
+      {feedItems.length > 0 && (
+        <ul className="flex flex-col gap-3">
+          {feedItems.map((item) => (
+            <FeedCard key={item.id} item={item} level="casual" accentColor={ACCENT_CASUAL} animKey={0} />
+          ))}
+        </ul>
+      )}
+
+      {learnMatches.length > 0 && (
+        <div className={feedItems.length > 0 ? "mt-8" : ""}>
+          <h2 className="mb-3 font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
+            From Learn
+          </h2>
+          <ul className="flex flex-col divide-y divide-hairline border-y border-hairline">
+            {learnMatches.map((article) => (
+              <li key={article.slug} className="py-3">
+                <Link
+                  href={`/learn/${article.slug}`}
+                  className="font-sans font-semibold text-ink hover:underline"
+                >
+                  {article.icon} {article.title}
+                </Link>
+                <p className="mt-1 font-sans text-sm text-muted">{article.teaser}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {historyMatches.length > 0 && (
+        <div className={feedItems.length > 0 || learnMatches.length > 0 ? "mt-8" : ""}>
+          <h2 className="mb-3 font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
+            From History
+          </h2>
+          <ul className="flex flex-col divide-y divide-hairline border-y border-hairline">
+            {historyMatches.map((milestone) => (
+              <li key={milestone.title} className="py-3">
+                <Link
+                  href={`/timeline?category=${encodeURIComponent(milestone.category)}`}
+                  className="font-sans font-semibold text-ink hover:underline"
+                >
+                  {milestone.title}
+                </Link>
+                <span className="ml-2 font-mono text-[10px] text-muted">{milestone.date}</span>
+                <p className="mt-1 font-sans text-sm text-muted">{milestone.blurb}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </>
   );
 }
