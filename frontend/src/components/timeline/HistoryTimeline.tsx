@@ -1,4 +1,7 @@
 import { HISTORY_ERAS, type Era, type Milestone } from "@/lib/history-content";
+import { searchItems } from "@/lib/api";
+import { FeedCard } from "@/components/FeedCard";
+import { ACCENT_CASUAL } from "@/lib/theme";
 
 function bucketByEra(milestones: Milestone[]): [Era, Milestone[]][] {
   return HISTORY_ERAS.map(
@@ -9,7 +12,15 @@ function bucketByEra(milestones: Milestone[]): [Era, Milestone[]][] {
   ).filter(([, eraMilestones]) => eraMilestones.length > 0);
 }
 
-function SpotlightCard({ milestone }: { milestone: Milestone }) {
+// Async server component (valid in the App Router as long as nothing
+// between here and the page is a client component, which nothing is) —
+// only landmark milestones carry `keywords`, so only they get this section,
+// keeping it consistent with the landmark/compact visual hierarchy instead
+// of adding a live-data fetch to all 39 entries.
+async function SpotlightCard({ milestone }: { milestone: Milestone }) {
+  const relatedResult = milestone.keywords ? await searchItems(milestone.keywords) : null;
+  const related = relatedResult?.ok ? relatedResult.items.slice(0, 3) : [];
+
   return (
     <li className="border border-hairline bg-card p-5 sm:px-6 sm:py-6">
       <div className="mb-2 flex flex-wrap items-center gap-2 font-mono text-[10px] tracking-wide text-muted">
@@ -31,6 +42,19 @@ function SpotlightCard({ milestone }: { milestone: Milestone }) {
       >
         View source &rarr;
       </a>
+
+      {related.length > 0 && (
+        <div className="mt-4 border-t border-hairline pt-4">
+          <h4 className="mb-2 font-mono text-[10px] font-semibold tracking-[0.05em] text-muted uppercase">
+            Related right now
+          </h4>
+          <ul className="flex flex-col gap-3">
+            {related.map((item) => (
+              <FeedCard key={item.id} item={item} level="casual" accentColor={ACCENT_CASUAL} animKey={0} />
+            ))}
+          </ul>
+        </div>
+      )}
     </li>
   );
 }

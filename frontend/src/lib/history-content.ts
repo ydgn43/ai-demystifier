@@ -15,6 +15,11 @@ export type Milestone = {
   // Spotlight entries within an era render as full cards; the rest render
   // as a compact list. Hand-picked, not derived from any metric.
   landmark?: boolean;
+  // Short, retrieval-friendly query for a "Related right now" section,
+  // same rationale as LearnArticle.keywords — full-text search works
+  // better on a focused term than a full sentence. Only set on landmark
+  // entries; the compact-list entries don't get this treatment.
+  keywords?: string;
 };
 
 export type Era = {
@@ -114,6 +119,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "A summer workshop organized by John McCarthy, Marvin Minsky, and others at Dartmouth College is generally credited with coining the term \"artificial intelligence\" and establishing it as a field of study.",
     sourceUrl: "https://en.wikipedia.org/wiki/Dartmouth_workshop",
     landmark: true,
+    keywords: "artificial intelligence research",
   },
   {
     year: 1958,
@@ -124,6 +130,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "Frank Rosenblatt introduced the perceptron, an early single-layer neural network designed for pattern recognition, generating significant early optimism about machine learning.",
     sourceUrl: "https://en.wikipedia.org/wiki/Perceptron",
     landmark: true,
+    keywords: "perceptron neural network",
   },
   {
     year: 1969,
@@ -152,6 +159,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "David Rumelhart, Geoffrey Hinton, and Ronald Williams showed how backpropagation could effectively train multi-layer neural networks, reviving interest in connectionist approaches after the first AI winter.",
     sourceUrl: "https://en.wikipedia.org/wiki/Backpropagation",
     landmark: true,
+    keywords: "backpropagation neural network",
   },
   {
     year: 1995,
@@ -207,6 +215,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "Fei-Fei Li and collaborators at Stanford built ImageNet, a large labeled image dataset, and launched an annual competition on it — the benchmark that AlexNet would later break open in 2012.",
     sourceUrl: "https://en.wikipedia.org/wiki/ImageNet",
     landmark: true,
+    keywords: "ImageNet dataset",
   },
   {
     year: 2010,
@@ -235,6 +244,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "A deep convolutional neural network built by Alex Krizhevsky, Ilya Sutskever, and Geoffrey Hinton dramatically outperformed prior methods on the ImageNet competition, a result widely credited with triggering the modern deep learning boom.",
     sourceUrl: "https://en.wikipedia.org/wiki/AlexNet",
     landmark: true,
+    keywords: "convolutional neural network image classification",
   },
   {
     year: 2013,
@@ -308,6 +318,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "DeepMind's AlphaGo defeated Lee Sedol, one of the world's top Go players, in a five-game match — a result many researchers had expected to still be years away given Go's enormous search space.",
     sourceUrl: "https://en.wikipedia.org/wiki/AlphaGo",
     landmark: true,
+    keywords: "reinforcement learning AlphaGo",
   },
   {
     year: 2017,
@@ -327,6 +338,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "A Google Brain team introduced the Transformer architecture, built entirely around attention mechanisms rather than recurrence — it became the architecture behind essentially every major language model that followed, including GPT and BERT.",
     sourceUrl: "https://arxiv.org/abs/1706.03762",
     landmark: true,
+    keywords: "transformer attention",
   },
   {
     year: 2018,
@@ -392,6 +404,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "OpenAI released GPT-3, a 175-billion-parameter language model whose scale enabled strong few-shot performance across many tasks without task-specific fine-tuning, and which powered the first wave of GPT-based products.",
     sourceUrl: "https://en.wikipedia.org/wiki/GPT-3",
     landmark: true,
+    keywords: "GPT-3 language model",
   },
   {
     year: 2021,
@@ -402,6 +415,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "DeepMind published AlphaFold 2 in Nature and open-sourced its code, after the system's markedly improved accuracy at CASP14 was described by the competition's organizers as effectively solving the decades-old protein structure prediction problem.",
     sourceUrl: "https://en.wikipedia.org/wiki/AlphaFold",
     landmark: true,
+    keywords: "AlphaFold protein",
   },
   {
     year: 2022,
@@ -430,6 +444,7 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "OpenAI released ChatGPT, a conversational interface built on GPT-3.5, which reached an unprecedented pace of mainstream adoption and brought large language models into daily use for a broad public audience for the first time.",
     sourceUrl: "https://en.wikipedia.org/wiki/ChatGPT",
     landmark: true,
+    keywords: "ChatGPT",
   },
   {
     year: 2023,
@@ -449,5 +464,6 @@ export const HISTORY_MILESTONES: Milestone[] = [
       "OpenAI released GPT-4, its first multimodal flagship model, able to accept both text and images as input — and the model that powered a new wave of AI products built on top of the GPT API.",
     sourceUrl: "https://en.wikipedia.org/wiki/GPT-4",
     landmark: true,
+    keywords: "GPT-4",
   },
 ];
