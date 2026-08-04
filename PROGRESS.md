@@ -88,12 +88,22 @@ storage) that CLAUDE.md says to flag before adding, not just build.
 
 ## Phase 4 — Deploy
 
-- [ ] Hosted Postgres (Neon or Supabase) provisioned, migrations applied
-- [ ] Backend deployed (host not yet decided — CLAUDE.md only specifies Vercel for the frontend)
-- [ ] **New blocker as of Phase 2.6**: the Demystifier now depends on a local Ollama instance. A serverless/typical PaaS host can't run that. Needs a decision before this phase can proceed — options are a GPU-capable VM/host running both the backend and Ollama, or falling back to a hosted API (Gemini paid tier, or another provider) in production while keeping Ollama for local dev.
-- [ ] Frontend deployed to Vercel, pointed at the deployed backend
-- [ ] Production env vars/secrets set (`DATABASE_URL`, `CRON_SECRET`, `GITHUB_TOKEN`, `SITE_URL` set to the real domain, plus whatever the Ollama-vs-hosted-API decision above requires)
-- [ ] GitHub Actions cron pointed at the production endpoint
+**Decision made (2026-08-04)**, resolving the Phase 2.6 Ollama-hosting blocker:
+self-host the backend + Ollama on this PC (zero pipeline code changes, zero
+GPU cloud cost), exposed via Tailscale Funnel for a stable public HTTPS URL
+without port-forwarding/a static IP. Postgres still moves to a hosted free
+tier (Neon/Supabase) so the DB survives this machine being off; frontend
+still deploys to Vercel as originally planned. Full step-by-step runbook:
+`DEPLOY.md`. Accepted tradeoff: the live site (`/feed`, `/search`,
+`/item/[id]`) is only up while this PC is on and connected — `/learn` and
+`/timeline` are static and unaffected. Revisit if that stops being fine.
+
+- [ ] Hosted Postgres (Neon or Supabase) provisioned, migrations applied — `DEPLOY.md` step 2
+- [ ] Backend exposed via Tailscale Funnel, running persistently (not just an interactive terminal session) — `DEPLOY.md` step 1
+- [x] ~~New blocker as of Phase 2.6~~ — resolved above
+- [ ] Frontend deployed to Vercel, pointed at the deployed backend — `DEPLOY.md` step 3
+- [ ] Production env vars/secrets set (`DATABASE_URL`, `CRON_SECRET`, `GITHUB_TOKEN`, `SITE_URL` set to the real domain) — `DEPLOY.md` steps 2-4
+- [x] GitHub Actions cron workflow ready to point at production — `BACKEND_URL`/`CRON_SECRET` wiring already existed; workflow itself improved 2026-08-04 to surface per-source/per-item failures as annotations instead of failing silently (see Known follow-ups). Setting the actual repo variable/secret values is `DEPLOY.md` step 4, still pending.
 
 ## Phase 5 — Polish / post-launch
 
@@ -223,11 +233,37 @@ new data collection.
 
 **Gotcha hit while testing** (worth remembering, not a code bug): `uvicorn --reload` on Windows leaves orphaned worker subprocesses behind when you kill the reloader PID directly (`Stop-Process` on the parent doesn't take the multiprocessing-spawned child with it) — one of those zombies kept answering on port 8000 with pre-edit code for a while, which looked exactly like "the backend isn't picking up schema changes." Confirmed via `/openapi.json` (shows the live process's actual Pydantic schema) and `Get-CimInstance Win32_Process` to find the orphan's command line. Fix: enumerate every `python.exe` process and kill all of them before starting one clean instance, rather than trusting a single `Stop-Process` on the PID `Get-NetTCPConnection` reports (that can be stale immediately after a kill).
 
+### Follow-up: bookmark icon (same day)
+
+- [x] `BookmarkButton` swapped its `★`/`☆` glyphs for a small inline SVG bookmark-ribbon icon (outline unsaved, filled saved) — the star read as "favorite/rating," not "save for later," and was the only glyph-based icon on the site instead of a purpose-built one.
+
+### Follow-up: replace Timeline with a curated history of AI/ML (2026-08-04)
+
+User wanted something different from the live catch-up view `/timeline` had been since Phase 6: multiple category timelines plus one general timeline covering AI/ML's actual history, not just recently-ingested items.
+
+- [x] `/timeline` repurposed entirely (same URL/nav label, different content and purpose) into a static, hand-researched history: `frontend/src/lib/history-content.ts`, 39 milestones (1943 McCulloch-Pitts neuron → 2023 GPT-4) researched via WebSearch/WebFetch against Wikipedia and primary sources (arXiv papers, official announcements), each with a real verifiable `sourceUrl` — same "no invented claims" discipline as the Demystifier pipeline, applied to hand-curation instead of LLM generation. Same static-file pattern as `learn-content.ts` — no DB, no pipeline involvement, low-frequency hand edits going forward.
+- [x] Old live/read-tracking Timeline removed: backend `GET /timeline` route, `TimelineResponse` schema, and `TimelineResults.tsx` all deleted — grepped first to confirm nothing else referenced them. Read/unread tracking stays on the homepage Feed (`read-progress.ts` untouched).
+- [x] **Visual redesign same day**, after initial feedback that 39 uniform cards read "like a news feed, not history": restructured around 7 real historical eras (Origins, The First AI Winter, Quiet Progress, Setting the Stage, The Deep Learning Boom, The Transformer Era, The Generative AI Era — each with a title/year-range/one-line blurb) with 11 hand-picked landmark moments (Dartmouth Workshop, the Perceptron, Backprop, ImageNet, AlexNet, AlphaGo, the Transformer paper, GPT-3, AlphaFold 2, ChatGPT, GPT-4) getting full spotlight cards while the other 28 render as a tight `divide-y` compact list — hierarchy via typographic weight/size only, no new colors (the site's two accent colors stay semantically tied to the casual/developer toggle, not reused here).
+- Verified both passes with a real browser (not just `npm run build`) — screenshotted the era headers, the landmark/compact contrast, the zero-landmark "First AI Winter" era rendering as list-only with no empty spotlight gap, and the category-filter edge case.
+- Both builds were done via forked background agents (research + implementation, then a second fork for the visual redesign) to keep the research/iteration noise out of the main conversation; verified independently afterward rather than trusting the reports as-is — first fork attempt actually did nothing (0 tool calls, no file changes) and had to be resumed with an explicit "you didn't do the work" prompt before it produced real output.
+
+### Follow-up: engagement features batch (2026-08-04)
+
+Picked from a menu of suggested next steps (deploy, reliability, engagement, pipeline quality) — user chose all four; this covers the engagement-feature portion, built via a forked background agent and independently verified afterward (browser checks, not just the report).
+
+- [x] "On this day in AI history" homepage widget (`HistorySpotlight.tsx`) — since no `Milestone` has day-level precision, an exact "on this day" match is never honestly possible; uses a deterministic day-of-year cycle through all 39 milestones instead, labeled "From AI history" rather than implying a real date match.
+- [x] History landmarks cross-linked to live related feed items — same `keywords` → `searchItems()` → top-3 `FeedCard`s pattern Learn already uses for "Related right now." Added optional `keywords` field to `Milestone`, populated on the 11 landmark entries only; renders nothing (no empty section) when there's no live match, which is most of the 11 given the current small corpus.
+- [x] RSS feed (`frontend/src/app/feed.xml/route.ts`) — RSS 2.0 chosen over Atom (less boilerplate, no feature this app needs that Atom-only offers), XML-escaped, linked from the footer.
+- [x] `/search` extended to also match `LEARN_ARTICLES` and `HISTORY_MILESTONES` (plain substring match, server-side, no new infra) under separate "From Learn"/"From History" sections below the live results.
+
 ## Known follow-ups
 
+- [x] `ranking.py`'s `METRIC_SCALE` github cap recalibrated from an arbitrary 500 to 5 (2026-08-04), grounded in the live corpus rather than guessed: real github stars were 0-1 across the entire sample (p99=1, since the fetcher only pulls repos created in the last 24h — no time for stars to accumulate), so the old cap crushed the metric component to ~0 for every item. huggingface's cap (100) checked out fine against real data (p90=89) and was left as-is.
+- [x] `daily-digest.yml` (2026-08-04): fixed a stale comment claiming `/summarize/run` still paces Gemini free-tier calls (moot since the Phase 2.6 Ollama switch); both steps now parse the JSON response and surface per-source ingest failures / per-item summarize failures as GitHub Actions annotations instead of only being visible if someone reads the raw response body by hand.
+
 - [x] ~~`/summarize/run` per-item timing~~ — measured: ~10-15s/item warm (RTX 4060 Ti, qwen2.5:7b-instruct), so a 50-item batch is now ~10-12 min instead of the old Gemini-paced ~11 min — similar wall-clock time, still a long synchronous request. The serverless-execution-time-cap risk for Phase 4 noted below still applies.
-- [ ] Article length (`article1`/`article2`) caps around 100-110 words with qwen2.5:7b-instruct even with explicit "150+ words" prompting and `num_predict` raised — a real instruction-following ceiling for this model size, not a bug. Accepted as-is (2026-08-03); revisit if it feels too thin in practice (options: few-shot prompting, a bigger model).
+- [ ] Article length (`article1`/`article2`): tried a worked few-shot example in `SYSTEM_INSTRUCTION` (2026-08-04, `PROMPT_VERSION` bumped to `v6`) — measured real improvement (casual ~87→~98 words avg, developer ~93→~109 words avg across 4 real items, 7/8 measurements improved) but every sample still lands under the 150-word floor (best case 118 words). Kept the change since it's a genuine, rule-compliant gain, but this confirms rather than fixes the underlying ceiling — a bigger/different model is still the only path to actually hitting 150+.
 - [x] ~~GitHub ingestion had no AI/ML topical filter~~ — fixed (2026-08-03): the fetcher previously did `created:>yesterday, sort:stars` with no subject-matter filter at all, so generic high-star repos (a game booster, a checkers game, a movie app) were ranking into the feed. Now runs one search per AI/ML topic (`machine-learning`, `llm`, `nlp`, `computer-vision`, etc.) and merges/dedupes the results. Stale non-AI rows already in the DB were cleared via `backend/migrations/004_clear_stale_github_items.sql`.
 - [ ] GitHub API requests per ingest run went from ~26 (1 search + 25 READMEs) to ~35 (10 topic searches + up to 25 READMEs). Unauthenticated GitHub API is capped at 60 req/hr, which is now genuinely tight — `GITHUB_TOKEN` (already an optional env var) is effectively required, not just a nice-to-have.
-- [ ] Local-Ollama-vs-Phase-4-deploy tension (see Phase 4) is unresolved — needs a decision before deploy can proceed.
+- [x] ~~Local-Ollama-vs-Phase-4-deploy tension~~ — resolved 2026-08-04, see Phase 4: self-host this PC via Tailscale Funnel rather than a cloud GPU host or hosted API.
 - [ ] `npm run build` hit a JS heap OOM twice in a row during the Phase 2.9 work, resolved by stopping the Next dev server first and retrying — this machine was under genuine memory pressure (4GB free of 31.7GB) from the Ollama reprocessing job plus normal desktop usage, not a code issue. Worth remembering as a real constraint of doing local builds while `/summarize/run` batches are active on this hardware.
