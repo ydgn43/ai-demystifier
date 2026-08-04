@@ -23,12 +23,24 @@ jobs:
     steps:
       - name: Ingest raw items
         run: |
-          curl -sS -f --max-time 120 -X POST "$BACKEND_URL/ingest/run" \
-            -H "X-Cron-Secret: $CRON_SECRET"
+          response=$(curl -sS -f --max-time 120 -X POST "$BACKEND_URL/ingest/run" \
+            -H "X-Cron-Secret: $CRON_SECRET")
+          echo "$response" | jq .
+          # A source failing is non-fatal to the run (ingest/run itself still
+          # returns 200), but shouldn't pass silently — surface it as a
+          # visible annotation instead of only showing up if someone reads
+          # the raw response body.
+          echo "$response" | jq -r 'to_entries[] | select(.value.ok == false) | "::error::ingest source \(.key) failed: \(.value.error)"'
 
-      # /summarize/run paces Gemini free-tier calls at ~12.5s apart, so a
-      # full batch of 50 can take ~10-11 minutes — this is expected, not a hang.
+      # /summarize/run runs local Ollama inference (qwen2.5:7b-instruct) per
+      # item, ~10-15s/item warm on the RTX 4060 Ti this backend runs on, so a
+      # full batch of 50 is ~10-12 minutes — this is expected, not a hang.
       - name: Summarize new items
         run: |
-          curl -sS -f --max-time 1200 -X POST "$BACKEND_URL/summarize/run?limit=50" \
-            -H "X-Cron-Secret: $CRON_SECRET"
+          response=$(curl -sS -f --max-time 1200 -X POST "$BACKEND_URL/summarize/run?limit=50" \
+            -H "X-Cron-Secret: $CRON_SECRET")
+          echo "$response" | jq .
+          # Per-item failures don't fail the batch (by design — one bad item
+          # shouldn't block the rest), but should still be visible rather
+          # than only discoverable by reading the response body by hand.
+          echo "$response" | jq -r '.errors[]? | "::warning::item \(.item_id) failed to summarize: \(.error)"'
