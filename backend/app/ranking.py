@@ -33,9 +33,19 @@ SOURCE_WEIGHTS: dict[str, float] = {
 # (metrics_json key, log-scale cap) per source. The cap is the raw metric
 # value that maps to a full 1.0 metric score; log1p keeps a single viral
 # outlier from dominating the ranking.
+#
+# Checked against the live corpus (2026-08-04, n=55 huggingface / n=30
+# github): huggingface upvotes p50=13 p90=89 p95=257 max=292, so 100 already
+# saturates right around "genuinely popular" - left as-is. github stars were
+# 0-1 across the entire sample (p99=1) because the fetcher only pulls repos
+# *created in the last 24h* (see fetchers/github.py) - there's no time for
+# stars to accumulate, so the old cap of 500 crushed every real value to
+# ~0 and made the metric component dead weight. 5 gives the rare same-day
+# repo that does pick up a couple of stars actual signal, while still
+# leaving headroom above the observed max. Revisit as more data accumulates.
 METRIC_SCALE: dict[str, tuple[str, float]] = {
     "huggingface": ("upvotes", 100.0),
-    "github": ("stars", 500.0),
+    "github": ("stars", 5.0),
 }
 
 
