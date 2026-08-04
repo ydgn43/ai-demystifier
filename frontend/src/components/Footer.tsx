@@ -12,9 +12,17 @@ export function Footer() {
   return (
     <footer className="border-t border-hairline bg-card">
       <div className="mx-auto flex w-full max-w-[700px] flex-wrap items-center justify-between gap-5 px-4 py-10 sm:px-6">
-        <p className="font-mono text-xs tracking-wide text-muted">
-          One email each morning. No hype.
-        </p>
+        <div className="flex flex-col gap-1.5">
+          <p className="font-mono text-xs tracking-wide text-muted">
+            One email each morning. No hype.
+          </p>
+          <a
+            href="/feed.xml"
+            className="font-mono text-[11px] font-medium tracking-[0.06em] text-muted uppercase hover:text-ink"
+          >
+            RSS feed &rarr;
+          </a>
+        </div>
         <form
           onSubmit={(e) => e.preventDefault()}
           className="flex w-full overflow-hidden border border-hairline sm:w-auto"
