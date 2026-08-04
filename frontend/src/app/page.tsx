@@ -1,6 +1,7 @@
 import { getFeed } from "@/lib/api";
 import { Feed } from "@/components/Feed";
 import { EmptyState } from "@/components/EmptyState";
+import { HistorySpotlight } from "@/components/HistorySpotlight";
 
 // The feed changes with every ingest run, not every deploy — always fetch
 // fresh rather than serving a build-time snapshot.
@@ -11,6 +12,10 @@ export default async function Home() {
 
   return (
     <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
+      <div className="mt-6">
+        <HistorySpotlight />
+      </div>
+
       {!result.ok ? (
         <EmptyState message="Couldn't load today's digest." hint={result.error} />
       ) : result.today.length === 0 && result.this_week.length === 0 ? (
