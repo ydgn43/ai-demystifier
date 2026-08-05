@@ -12,7 +12,8 @@ export async function getFeed(): Promise<FeedResult> {
     }
     const feed = (await res.json()) as FeedResponse;
     return { ok: true, ...feed };
-  } catch {
+  } catch (err) {
+    console.error("getFeed failed:", err);
     return { ok: false, error: "could not reach the backend" };
   }
 }
