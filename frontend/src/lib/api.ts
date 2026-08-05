@@ -2,21 +2,14 @@ import type { FeedItem, FeedResponse, ItemDetail } from "./types";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://127.0.0.1:8000";
 
-// The backend runs on a home PC behind a Tailscale Funnel, not a cloud
-// service — occasional ECONNRESET mid-TLS-handshake is expected on that
-// path (cross-region routing between Vercel and the funnel relay), so one
-// retry absorbs it instead of surfacing a false "backend unreachable".
+// The backend runs on a home PC behind a Cloudflare Tunnel, not a cloud
+// service, so one retry absorbs an occasional transient network hiccup
+// instead of surfacing a false "backend unreachable".
 async function fetchBackend(url: string, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(url, init);
-  } catch (err) {
-    console.error("fetchBackend first attempt failed:", url, err);
-    try {
-      return await fetch(url, init);
-    } catch (err2) {
-      console.error("fetchBackend retry also failed:", url, err2);
-      throw err2;
-    }
+  } catch {
+    return await fetch(url, init);
   }
 }
 
