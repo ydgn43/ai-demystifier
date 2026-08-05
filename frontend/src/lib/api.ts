@@ -9,8 +9,14 @@ const BACKEND_API_URL = process.env.BACKEND_API_URL ?? "http://127.0.0.1:8000";
 async function fetchBackend(url: string, init?: RequestInit): Promise<Response> {
   try {
     return await fetch(url, init);
-  } catch {
-    return await fetch(url, init);
+  } catch (err) {
+    console.error("fetchBackend first attempt failed:", url, err);
+    try {
+      return await fetch(url, init);
+    } catch (err2) {
+      console.error("fetchBackend retry also failed:", url, err2);
+      throw err2;
+    }
   }
 }
 
