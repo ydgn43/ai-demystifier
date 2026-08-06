@@ -287,7 +287,7 @@ User wanted the Learn section's content improved and extended. All 10 existing a
 - [x] Fixed a stale comment in `search/page.tsx` hardcoding "9 Learn articles, 39 milestones" (already wrong — was 10) — reworded to not hardcode a count that rots again.
 - [x] No `glossary.json` changes needed — it already had entries for every new topic's core term.
 - Verified: `tsc --noEmit` + `next build` clean, then a real local production server checked in-browser — index page (17 cards, "0 of 17 completed"), a new article page (glossary tooltips, Further Reading link, live "Related right now" match, correct prev/next), a backfilled existing article (citation renders, nothing else shifted), search (`?q=diffusion` surfaces the new article under "From Learn"), and `/sitemap.xml` (all 17 slugs present).
-- Note: a forked background agent was tried first for the actual content writing (per the `history-content.ts` precedent of delegating this kind of work) but failed mid-response with a connection error before writing anything — done directly instead rather than retrying the fork.
+- Note: a forked background agent was tried first for the actual content writing (per the `history-content.ts` precedent of delegating this kind of work) but failed mid-response — the user's network connection changed mid-task — before writing anything. Done directly instead rather than retrying the fork.
 
 ## Known follow-ups
 
