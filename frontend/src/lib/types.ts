@@ -18,8 +18,10 @@ export type FeedItem = {
 };
 
 export type FeedResponse = {
-  today: FeedItem[];
-  this_week: FeedItem[];
+  items: FeedItem[];
+  page: number;
+  total_pages: number;
+  total_items: number;
 };
 
 export type ItemDetail = {

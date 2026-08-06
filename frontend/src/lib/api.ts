@@ -15,9 +15,9 @@ async function fetchBackend(url: string, init?: RequestInit): Promise<Response> 
 
 export type FeedResult = ({ ok: true } & FeedResponse) | { ok: false; error: string };
 
-export async function getFeed(): Promise<FeedResult> {
+export async function getFeed(page: number = 1): Promise<FeedResult> {
   try {
-    const res = await fetchBackend(`${BACKEND_API_URL}/feed`);
+    const res = await fetchBackend(`${BACKEND_API_URL}/feed?${new URLSearchParams({ page: String(page) })}`);
     if (!res.ok) {
       return { ok: false, error: `backend returned ${res.status}` };
     }

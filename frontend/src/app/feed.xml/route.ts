@@ -17,7 +17,7 @@ function escapeXml(value: string): string {
 
 export async function GET(): Promise<Response> {
   const result = await getFeed();
-  const items = result.ok ? [...result.today, ...result.this_week] : [];
+  const items = result.ok ? result.items : [];
 
   const itemsXml = items
     .map((item) => {

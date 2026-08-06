@@ -24,5 +24,7 @@ class FeedItem(BaseModel):
 
 
 class FeedResponse(BaseModel):
-    today: list[FeedItem]
-    this_week: list[FeedItem]
+    items: list[FeedItem]
+    page: int
+    total_pages: int
+    total_items: int

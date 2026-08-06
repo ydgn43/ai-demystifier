@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { LevelToggle } from "@/components/LevelToggle";
 import { useReadProgress } from "@/lib/read-progress";
 import { accentColorFor } from "@/lib/theme";
+import { Pagination } from "@/components/Pagination";
 
 const CATEGORIES: Category[] = ["Models", "Research", "Developer Tools", "Industry News"];
 const CATEGORY_FILTERS = ["All", ...CATEGORIES] as const;
@@ -56,7 +57,15 @@ function CategoryGroups({
   );
 }
 
-export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedItem[] }) {
+export function Feed({
+  items,
+  page,
+  totalPages,
+}: {
+  items: FeedItem[];
+  page: number;
+  totalPages: number;
+}) {
   const [level, setLevel] = useState<Level>("casual");
   const [animKey, setAnimKey] = useState(0);
   const [category, setCategory] = useState<CategoryFilter>("All");
@@ -68,18 +77,11 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
     setAnimKey((k) => k + 1);
   };
 
-  const filteredToday = useMemo(
-    () => (category === "All" ? today : today.filter((item) => item.category === category)),
-    [today, category],
+  const filteredItems = useMemo(
+    () => (category === "All" ? items : items.filter((item) => item.category === category)),
+    [items, category],
   );
-  const filteredThisWeek = useMemo(
-    () => (category === "All" ? thisWeek : thisWeek.filter((item) => item.category === category)),
-    [thisWeek, category],
-  );
-  const visibleCount = filteredToday.length + filteredThisWeek.length;
-  const readCount =
-    filteredToday.filter((item) => readItems.has(item.id)).length +
-    filteredThisWeek.filter((item) => readItems.has(item.id)).length;
+  const readCount = filteredItems.filter((item) => readItems.has(item.id)).length;
 
   return (
     <div>
@@ -104,47 +106,25 @@ export function Feed({ today, thisWeek }: { today: FeedItem[]; thisWeek: FeedIte
         </div>
       </div>
 
-      {filteredToday.length === 0 && filteredThisWeek.length === 0 ? (
-        <EmptyState message="No items in this category yet." />
+      {filteredItems.length === 0 ? (
+        <EmptyState message="No items in this category on this page." />
       ) : (
         <div className="mt-5 space-y-10">
           <p className="text-right font-mono text-[11px] tracking-wide text-muted">
-            {readCount} of {visibleCount} read
+            {readCount} of {filteredItems.length} read
           </p>
 
-          <section>
-            <h2 className="mb-3 font-sans text-lg font-semibold text-ink">Today</h2>
-            {filteredToday.length === 0 ? (
-              <p className="font-sans text-sm text-muted">
-                No new items yet today — here&apos;s what&apos;s been happening this week.
-              </p>
-            ) : (
-              <CategoryGroups
-                items={filteredToday}
-                level={level}
-                accentColor={accentColor}
-                animKey={animKey}
-                readItems={readItems}
-              />
-            )}
-          </section>
-
-          {filteredThisWeek.length > 0 && (
-            <section>
-              <h2 className="mb-3 font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
-                Earlier this week
-              </h2>
-              <CategoryGroups
-                items={filteredThisWeek}
-                level={level}
-                accentColor={accentColor}
-                animKey={animKey}
-                readItems={readItems}
-              />
-            </section>
-          )}
+          <CategoryGroups
+            items={filteredItems}
+            level={level}
+            accentColor={accentColor}
+            animKey={animKey}
+            readItems={readItems}
+          />
         </div>
       )}
+
+      <Pagination page={page} totalPages={totalPages} />
     </div>
   );
 }

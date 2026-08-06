@@ -8,9 +8,20 @@ const SITE_URL = process.env.SITE_URL ?? "http://localhost:3000";
 // until the next deploy, defeating the point of a sitemap.
 export const dynamic = "force-dynamic";
 
+async function getAllItems() {
+  const first = await getFeed(1);
+  if (!first.ok) return [];
+
+  const items = [...first.items];
+  for (let page = 2; page <= first.total_pages; page++) {
+    const result = await getFeed(page);
+    if (result.ok) items.push(...result.items);
+  }
+  return items;
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const result = await getFeed();
-  const items = result.ok ? [...result.today, ...result.this_week] : [];
+  const items = await getAllItems();
 
   return [
     { url: SITE_URL, changeFrequency: "hourly", priority: 1 },

@@ -7,8 +7,14 @@ import { HistorySpotlight } from "@/components/HistorySpotlight";
 // fresh rather than serving a build-time snapshot.
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const result = await getFeed();
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+  const result = await getFeed(page);
 
   return (
     <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col px-4 pb-20 sm:px-6">
@@ -17,14 +23,14 @@ export default async function Home() {
       </div>
 
       {!result.ok ? (
-        <EmptyState message="Couldn't load today's digest." hint={result.error} />
-      ) : result.today.length === 0 && result.this_week.length === 0 ? (
+        <EmptyState message="Couldn't load the digest." hint={result.error} />
+      ) : result.items.length === 0 ? (
         <EmptyState
-          message="Today's digest hasn't landed yet."
-          hint="Check back after the next run."
+          message={page === 1 ? "Today's digest hasn't landed yet." : "Nothing on this page."}
+          hint={page === 1 ? "Check back after the next run." : undefined}
         />
       ) : (
-        <Feed today={result.today} thisWeek={result.this_week} />
+        <Feed items={result.items} page={result.page} totalPages={result.total_pages} />
       )}
     </div>
   );
