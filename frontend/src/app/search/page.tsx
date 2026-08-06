@@ -45,8 +45,8 @@ async function SearchResults({ q }: { q: string }) {
   const feedItems = result.ok ? result.items : [];
 
   // Learn/History are static data, not backed by Postgres full-text search
-  // — a plain substring match at request time is enough at this size (9
-  // Learn articles, 39 milestones), no new infra needed.
+  // — a plain substring match at request time is enough at this size, no
+  // new infra needed.
   const learnMatches = LEARN_ARTICLES.filter(
     (a) => matches(a.title, q) || matches(a.teaser, q) || matches(a.keywords, q),
   );

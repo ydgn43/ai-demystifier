@@ -78,6 +78,28 @@ export default async function LearnArticlePage({
         ))}
       </div>
 
+      {article.furtherReading && article.furtherReading.length > 0 && (
+        <div className="mt-10 border-t border-hairline pt-6">
+          <h2 className="font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
+            Further reading
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {article.furtherReading.map((link) => (
+              <li key={link.url}>
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-sans text-sm text-ink underline decoration-hairline underline-offset-2 hover:decoration-ink"
+                >
+                  {link.title} &rarr;
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {related.length > 0 && (
         <div className="mt-10 border-t border-hairline pt-6">
           <h2 className="font-mono text-[11px] font-semibold tracking-[0.05em] text-muted uppercase">
