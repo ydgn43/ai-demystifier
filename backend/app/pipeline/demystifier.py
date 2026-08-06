@@ -10,7 +10,7 @@ from app.config import settings
 MODEL_NAME = "qwen2.5:7b-instruct"
 
 # Bump whenever the prompt below changes, so the corpus can be re-summarized cheaply.
-PROMPT_VERSION = "v7"
+PROMPT_VERSION = "v6"
 
 CATEGORIES = ["Models", "Research", "Developer Tools", "Industry News"]
 
@@ -31,69 +31,11 @@ text is thin, write a shorter article rather than padding it with invented detai
 still aim for the word counts below wherever the source text supports it).
 
 Return:
-- headline: a rewritten, plain-English headline.
-
-  RULE 0, checked FIRST, before anything else — DO NOT MIRROR THE SOURCE TITLE'S SHAPE.
-  Supplied titles are very often formatted as "ProjectName: Title Case Description" (a
-  paper or repo naming convention). It is not enough to change the words — if your
-  headline still contains a colon, still opens with a bare project/repo name, or is
-  still in Title Case, you have copied the source title's shape even if you reworded its
-  content, and that fails this task. Before returning your headline, check: does it
-  contain a colon? Does it open with what looks like a product name followed by a colon
-  or dash? Is more than the first word capitalized? If yes to any of these, discard it
-  and write an ordinary descriptive sentence instead — one that would look normal as the
-  first sentence of a news article, not as a title. A project's own name may still appear
-  INSIDE the sentence if it reads naturally there, just not as a colon-prefixed label.
-  Example: given the title "SocietyBench: Forecasting Counterfactual Social-World
-  Evolution", do NOT write "SocietyBench: A New Benchmark Tests..." (still title-shaped)
-  — write "A new benchmark called SocietyBench tests how well AI models can predict
-  real-world social events." (an ordinary sentence, name used naturally mid-sentence).
-
-  RULE 1 — CASING: write the
-  headline in sentence case, exactly like a normal written sentence. Capitalize ONLY the
-  first word and proper nouns (product/paper/company names). Do not capitalize every
-  word. This applies no matter how short, technical, or thin the source text is —
-  casing is a formatting rule, not a content judgment, so there is never an exception.
-  Wrong casing: "A New Framework Helps Identify Which Medical Data Matters Most"
-  Right casing, same content: "A new framework helps identify which medical data
-  matters most to an AI model's accuracy."
-  Before finalizing your headline, check it word by word: if more than the first word
-  and any proper nouns are capitalized, rewrite it in sentence case before returning it.
-
-  RULE 2 — CONTENT SHAPE: never open with "A New [Model/Framework/Tool/System/Approach/
-  Method]" followed by ANY verb describing a capability — this is not limited to a fixed
-  list of verbs. "Allows/Enables/Lets/Helps" are just examples; "Recovers/Boosts/Improves/
-  Achieves/Delivers" and any other verb are equally banned in this exact position, no
-  matter which one you pick. The test: if the sentence would still basically work with
-  the verb swapped for "can do" (e.g. "A new method can recover full cache behavior..."),
-  it's a generic capability verb — rephrase the whole sentence instead of hunting for a
-  different verb to slot into the same "A New X ___s Y" shape. Lead with what the thing
-  actually does, described directly ("Trains a single network to handle..." / "Distills
-  several separate skills into...") rather than with "A new X [any verb]s...". This
-  applies even when the source text is thin (e.g. a bare-bones README with no results or
-  comparisons) — thin source text is never a reason to fall back to this shape.
-
-  Beyond those two rules: if the source text supports it, prefer the SPECIFIC,
-  CONCRETE finding or comparison over a generic capability statement — what it does
-  *compared to* something else, what changed, or what was shown, not a restated
-  capability. If you can imagine the same headline shape fitting dozens of unrelated
-  papers by swapping a few words, it's too generic — go find the one specific, concrete
-  detail in the source text instead and lead with that. If the source text is too thin
-  to support that (nothing beyond a title and one line of description), it's fine to
-  simply paraphrase that one line in a plain sentence — just never fall back to the
-  banned "A New X enables Y" shape or Title Case as the easy way out.
-  Bad (generic capability, could describe almost anything): "A New Framework Allows
-  Multimodal Models to Efficiently Share Compute Between Vision and Language Tasks"
-  Good (one concrete, specific detail): "A new framework lets multimodal models handle
-  vision and language with the same shared weights, instead of separate ones for each."
-  Bad (title-shaped, vague): "A New AI Model for Diverse Movements"
-  Good (concrete, specific): "A new AI model learned to walk, run, and jump using one
-  shared network instead of a separate one trained for each movement."
-  Bad (title-shaped, vague): "A Financial Complaint Classification Approach"
-  Good (concrete, specific): "A financial complaint classifier shows that simpler
-  models can outperform more complex ones."
-  Given the title "VLM-8B: Document-QA Parity at 4-bit Quantization", a good headline is
-  "A small open model now reads charts and screenshots about as well as the expensive ones."
+- headline: a rewritten, plain-English headline (one short sentence, no jargon) that
+  captures the newsworthy point of this item — NOT a copy or light edit of the supplied
+  title, which is often a formal paper/repo name. E.g. given the title
+  "VLM-8B: Document-QA Parity at 4-bit Quantization", a good headline is "A small open
+  model now reads charts and screenshots about as well as the expensive ones."
 - level1: a casual, jargon-free teaser (2-3 sentences) for a general reader, used in a
   scannable feed list.
 - level2: a more technical teaser (2-4 sentences) for a developer audience, same feed-list
@@ -154,30 +96,6 @@ def _client() -> ollama.AsyncClient:
     return ollama.AsyncClient(host=settings.ollama_host)
 
 
-def _to_sentence_case(headline: str) -> str:
-    """Force sentence case onto a headline that may have come back in Title Case
-    despite the prompt's instructions — model casing instruction-following is
-    unreliable enough (~50% miss rate even with explicit rules) that a
-    deterministic fix-up is more robust than prompting alone. Preserves the
-    first word as-is (just capitalizes its first letter), ALL-CAPS tokens
-    (acronyms like AI/GPT/RAG, or alphanumeric ones like GPT-4), and any word
-    with an internal capital letter (brand names like ChatGPT/PyTorch) — those
-    are left untouched. Everything else gets lowercased.
-    """
-    words = headline.split(" ")
-    if not words or not words[0]:
-        return headline
-    fixed = [words[0][0].upper() + words[0][1:]]
-    for word in words[1:]:
-        core = word.strip(".,;:!?\"')")
-        has_internal_capital = any(c.isupper() for c in core[1:])
-        if core.isupper() or has_internal_capital:
-            fixed.append(word)
-        else:
-            fixed.append(word.lower())
-    return " ".join(fixed)
-
-
 async def demystify(title: str, raw_text: str | None) -> DemystifierOutput:
     prompt = f"Title: {title}\n\nSource text:\n{raw_text or '(no text supplied)'}"
 
@@ -192,6 +110,4 @@ async def demystify(title: str, raw_text: str | None) -> DemystifierOutput:
         # response this size (7 text fields + metadata in one JSON object).
         options={"temperature": 0.3, "num_predict": 2560},
     )
-    output = DemystifierOutput.model_validate_json(response.message.content)
-    output.headline = _to_sentence_case(output.headline)
-    return output
+    return DemystifierOutput.model_validate_json(response.message.content)
